@@ -1,0 +1,672 @@
+
+<html>
+	<head>
+		<title>Site</title>
+
+		<!-- <link rel="stylesheet" href="styles.css" /> -->
+		<!-- this could be standalone CSS using line above to source -->
+		<style>
+			p {
+				color: black;
+				padding: 10px;
+			}
+
+			h1:hover{
+				color:green;
+			}
+
+			button:hover{
+				background-color: blue;
+				color: red;
+			}
+
+			.line{      /* for line plot */
+				fill: none;
+				stroke: lightblue;
+			}
+
+			#tooltip{      
+				color: green;
+				position: absolute;     /* makes it possible to move the text around */
+				border: 1px black solid;
+				padding: 10px;
+				background-color: white;
+				display: none;      /* starts off hidden */
+				'top': 200)
+				'left': 200)
+			}
+
+			#map {
+			  width: 960px;
+			  height: 500px;
+			}
+
+
+
+		</style>
+
+		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+		   integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+		   crossorigin=""/>
+
+	</head>
+	<body>
+
+		<svg id = 'mapbody_v2' height = 400 width = '400', style="border:solid 1px black;">   <!-- to view output in svg -->
+		</svg>
+
+
+		<svg id = 'bar_callbacks' height = 400 width = '200', style="border:solid 1px black;"></svg>
+
+
+		<br>
+		<select id="selectButton"></select>
+		<div>   Select for choropleth: </div>
+		<select id="selectChoropleth"></select>
+		<br>
+
+
+
+
+		<svg id = 'mapbody_interactive_head' height = 400 width = '400', style="border:solid 1px black;">   <!-- to view output in svg -->
+		 <!-- 	<g id = 'mapbody_interactive' style='transform: translate(0px, 0px);'></g>  -->
+		</svg>
+
+
+
+		<svg id = 'call' height = 400 width = '49%', style="border:solid 1px black;">   <!-- to view output in svg -->
+			<g id = 'callback_plot' style='transform: translate(0px, 0px);'></g>  <!-- calls contain_cats  -->
+		</svg>
+
+		
+
+
+
+		<div id = 'tooltip'>Tooltip</div>
+
+		<div id = 'map_text'>
+			LSOA info....
+		</div>
+
+
+		<!-- leaflet doesn't seem to work with svg -->
+		 <p id = 'map' height = 500 width = '960', style="border:solid 1px black;"> 
+		</p>
+
+
+
+
+	</body>
+
+
+	<script src="https://d3js.org/d3.v6.js"></script>  
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script src="https://unpkg.com/json5@^2.0.0/dist/index.min.js"></script>   <!-- to parse single quotes text as json -->
+
+	 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+	   integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+	   crossorigin=""></script>
+
+
+	<script>
+
+
+		// leaflet book
+		var map = new L.Map("map", {center: [37.8, -96.9], zoom: 4})
+    		.addLayer(new L.TileLayer("http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"));
+
+    	var svg = d3.select(map.getPanes().overlayPane).append("svg"),
+    		g = svg.append("g").attr("class", "leaflet-zoom-hide");
+
+
+
+
+
+		// populate values for choropleth dropdown menus
+		var allGroup = ["trends", "other_trends"]
+		d3.select("#selectButton")
+		      .selectAll('myOptions')
+		     	.data(allGroup)
+		      .enter()
+		    	.append('option')
+		      .text(function (d) { return d; }) // text showed in the menu
+		      .attr("value", function (d) { return d; })
+
+		var allGroup = ['reverse_air_quality_indicator', "air_quality_indicator"]
+		d3.select("#selectChoropleth")
+		      .selectAll('myOptions')
+		     	.data(allGroup)
+		      .enter()
+		    	.append('option')
+		      .text(function (d) { return d; }) // text showed in the menu
+		      .attr("value", function (d) { return d; })  
+
+
+
+
+
+		// line graph for callback
+		let callback_plot = d3.select('#callback_plot')
+
+		function drawLineChart(selectedTrends) {
+
+			callback_plot.selectAll("*").remove();  // deleting previous chart
+
+			let bodyHeight = 400
+			let bodyWidth = 400
+
+			var margin = {top: 30, right: 30, bottom: 30, left: 50}
+				  , width = bodyWidth - margin.left - margin.right // Use the window's width 
+				  , height = bodyHeight - margin.top - margin.bottom; // Use the window's height
+
+
+			// creating functions to scale values
+			var xScale = d3.scaleLinear()
+			    .domain([2015, 2019]) // input
+			    .range([0, width]); // output
+
+		    var yScale = d3.scaleLinear()
+			    .domain([d3.min(selectedTrends), d3.max(selectedTrends)]) // input 
+			    .range([height, 0]); // output 
+
+			 		
+			// scaling x and y values to pixel positions
+			let years  = [2015, 2016, 2017, 2018, 2019]
+			let years_scaled = years.map(d => xScale(d))
+			let trends_scaled = selectedTrends.map(d => yScale(d))
+			
+
+			// making array of x/y array pairs years and crime numbers
+			let figure_arrays = []
+			for (let i = 0; i < years.length; i++) {         
+				figure_arrays.push([years_scaled[i], +trends_scaled[i]])
+			}
+
+			// will generate path for line
+			var Gen = d3.line(); 
+			var pathOfLine = Gen(figure_arrays); 
+
+
+			var svg = callback_plot.append("svg")
+			    .attr("width", width + margin.left + margin.right)
+			    .attr("height", height + margin.top + margin.bottom)
+			    .append("g")
+			    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+			 // 3. Call the x axis in a group tag
+			svg.append("g")
+			    .attr("class", "x axis")
+			    .attr("transform", "translate(0," + height + ")")
+			    .call(d3.axisBottom(xScale)); // Create an axis component with d3.axisBottom
+
+			 // 4. Call the y axis in a group tag
+			svg.append("g")
+			    .attr("class", "y axis")
+			    .call(d3.axisLeft(yScale)); // Create an axis component with d3.axisLeft
+
+			 // add the line
+		   svg.append('path') 
+   				.attr('class', 'line')
+    			.attr('d', pathOfLine)
+    			.attr("stroke", "red")
+                .attr("stroke-width", 4)
+
+
+
+		}
+
+		var d = new Date();
+		var time_counter = d.getTime()
+
+		// initial map centroids
+		var longitude_init_centroid = 51.5528   //// originals 51.5428
+		var latitude_init_centroid = -0.1624   /// -0.1594
+		var lat_long_px_scale = 3394          // pixels in 1 unit of long/lat    ///init1
+
+
+
+		const zoom = d3.zoom()     // func to enable zoom
+    		.on('zoom', (event) => {
+		      //g.attr('transform', event.transform);
+		      //console.log(event.transform.k, event.transform.x, event.transform.y)  // gets zoom, and x/y offset in pixels (x/y accounts for zoom)
+		      
+		      // gets bounding box, assuming linear zoom scale square viewing box
+		      units_original_centroid_to_edge = 200   // in px, could be adjusted to long/lat
+		      k = event.transform.k
+		      x_change_scaled = event.transform.x / k
+		      y_change_scaled = event.transform.y / k
+		      //console.log('scales: ', x_change_scaled, y_change_scaled, k)
+
+
+		      x_centroid = 0 + x_change_scaled   // should this be minus?
+		      y_centroid = 0 - y_change_scaled
+		      console.log('centroids: ', x_centroid, y_centroid)
+		      box_x_min = x_centroid - (units_original_centroid_to_edge / k)
+		      box_x_max = x_centroid + (units_original_centroid_to_edge / k)
+		      box_y_min = y_centroid - (units_original_centroid_to_edge / k)    // remember y is inverted (lower vals mean higher on page)
+		      box_y_max = y_centroid + (units_original_centroid_to_edge / k)
+		      console.log('box bounds: ', box_x_min, box_x_max, box_y_min, box_y_max)
+
+		      //console.log(x_change_scaled, y_change_scaled, x_centroid, y_centroid)
+		      //console.log(box_x_min, box_x_max, box_y_min, box_y_max)
+
+		      child_map.attr('transform', event.transform);   // change the name of object to change which SVG obj gets map action
+		      //revealText(k = event.transform.k)     // changes which text is revealed based on zoom level
+
+
+		      // calculate lat/long bounding box
+		      long_min = longitude_init_centroid -0.01 + box_x_min / lat_long_px_scale
+		      long_max = longitude_init_centroid +0.01 + box_x_max / lat_long_px_scale
+		      lat_min = latitude_init_centroid -0.01 - box_y_min / lat_long_px_scale
+		      lat_max = latitude_init_centroid +0.01 - box_y_max / lat_long_px_scale
+		      console.log('latlong bounds: ', long_min, long_max, lat_min, lat_max)
+
+
+		      zoom_url = `https://lykp0rfls6.execute-api.eu-west-2.amazonaws.com/prod/camden-nongas?longitude_max=${lat_min.toFixed(4)}&longitude_min=${lat_max.toFixed(4)}&latitude_max=${long_max.toFixed(4)}&latitude_min=${long_min.toFixed(4)}`   /// using backtick not single quotes to embed string literals
+
+			
+		      // calculate time since last bounding box update (update polys no more often than every 0.5secs)
+		      var d = new Date();
+		      if(d.getTime() - time_counter > 500) {
+		      	d = new Date();
+		      	time_counter = d.getTime()
+		      	$.getJSON(zoom_url, make_map)
+		      }
+
+
+		      // updating centroid values for future plots: bad idea
+		     //longitude_init_centroid = longitude_init_centroid + x_centroid
+		     //latitude_init_centroid = latitude_init_centroid + y_centroid   /// as y_centroid is negative, think is right way around...
+
+
+
+		      //// display axes and change on zoom to help debug, or add leaflet map (which might do choropleth without d3)
+
+
+
+
+		    })
+		    .scaleExtent([0.5, 100]);   // magnification from 0.5x to 100x
+
+
+
+
+		let bar_callbacks = d3.select('#bar_callbacks')
+
+		function callback_bars(values) {
+
+			bar_callbacks.selectAll("*").remove();  // deleting previous chart
+
+			let bodyHeight = 400
+			let bodyWidth = 200
+
+			var margin = {top: 5, right: 5, bottom: 5, left: 5}
+				  , width = bodyWidth - margin.left - margin.right // Use the window's width 
+				  , height = bodyHeight - margin.top - margin.bottom; // Use the window's height
+
+			let max = d3.max(values)
+
+		    let widthScale = d3.scaleLinear()
+		    	.range([0, 180])
+		    	.domain([0, max])
+
+		    years = ['2015', '2016', '2017', '2018', '2019']
+
+		    array_of_dicts = []
+		    for (let i = 0; i < values.length; i++) {
+		    	array_of_dicts[i] = {value: values[i], year_name: years[i]}
+		    }
+
+		    let positionScale = d3.scaleBand()
+		    	.range([0, 380])                   // chart will be 200 px high
+		    	.domain(years)   // taking names of inputs as category labels
+		    	.padding(0.3)      // padding between bars
+
+
+		   bar_callbacks.selectAll('rect')
+		    	.data(array_of_dicts)        /// needs to be an array of dictionaries to work
+		    	.enter()
+		    	.append('rect')
+			    	.attr('fill', 'pink')
+			    	//.attr('width', function(d) {console.log(widthScale(d.value)); return widthScale(d.value)})
+			    	.attr('width', function(d) {return widthScale(d.value)})
+			    	.attr('height', positionScale.bandwidth())    // makes bars fill available space
+			    	.attr('y', d => positionScale(d.year_name))
+			    // can only have one func to update a particular obj on mouseover, so put all changes to make in there
+		    	.on('mouseover', function(d) {       
+		    		this.style.fill ='green',
+		    		this.style.stroke = 'yellow'
+		    		callback_bars(d.target.__data__.values)
+		    	})
+
+		    	.on('mouseout', function(d) {       // action on unhover
+		    		this.style.fill = cScale(d.target.__data__.value)
+		    		this.style.stroke = 'black'
+		    	})
+
+		    }
+
+
+
+		function make_map(df) { 
+		    console.log(df)
+
+			let dataIndex = {}
+			let vals = []
+			let geoarray = []
+			let reverseDataIndex = {}
+
+
+			for (let i = 0; i < df.length; i++) {
+				let lsoa = df[i]['lsoa_code']
+				dataIndex[lsoa] = +df[i]['2015']
+				vals.push(+df[i]['2015'])
+				geoarray.push({type: 'Feature', geometry: JSON5.parse(df[i]['geometry']), 
+					value: +df[i]['2015'],
+					values: [+df[i]['2015'],
+						+df[i]['2016'],
+						+df[i]['2017'],
+						+df[i]['2018'],
+						+df[i]['2019']]
+				})
+				reverseDataIndex[lsoa] = 3 - +df[i]['2015']
+			}
+
+
+			// scaling for choro shading
+			let cScale = d3.scaleLinear()
+				.domain(d3.extent(vals))  // extent() finds min and max vals
+				.range(['white', 'blue'])
+
+			let bodyHeight = 400
+			let bodyWidth = 400
+
+			let Projection = d3.geoMercator()  // set projection
+				.translate([bodyWidth / 2, bodyHeight / 2])   // setting midpoint to centre of box
+				.scale(80)                 // zoom level (higher is further out)
+
+			let path = d3.geoPath()
+				.projection(Projection)    // initial path
+
+
+			main = {features: geoarray, type: 'FeatureCollection'}  // putting geoarray inside object makes this work (doesn't otherwise)
+																// is very specific about the input stucture needed
+
+
+			/// getting bounds, centre point, scale
+			center= d3.geoCentroid(main)   
+			let bounds = path.bounds(main);      
+
+			console.log(center, bounds)
+
+			var scale = 75  // this is needed in addition to the scale adjustment below
+
+			var hscale  = scale*bodyWidth  / (bounds[1][0] - bounds[0][0]);
+		    var vscale  = scale*bodyHeight / (bounds[1][1] - bounds[0][1]);
+		    var scale   = (hscale < vscale) ? hscale : vscale;
+		    var offset  = [bodyWidth - (bounds[0][0] + bounds[1][0])/2,
+                        bodyHeight - (bounds[0][1] + bounds[1][1])/1];
+
+
+		    // updating projection to centre over certain area, scale and offset
+		    Projection = d3.geoMercator()
+		        .center(center)
+		        .scale(scale)
+		        .translate(offset)
+
+
+		    path = path.projection(Projection)
+
+		    child_map.selectAll("*").remove()  ////    delete previous plot before drawing with new data
+		    //map.selectAll("*").remove();
+    		//child_map = map.append('g')    
+
+
+			child_map.selectAll('path')
+				.data(main.features)   // selecting features key from geojson
+				.enter().append('path')        // add new path for each datapoint
+				.attr('d', d => path(d))
+				.attr('stroke', 'black')      // boundary cols
+				.attr('fill', 
+					d => d.value ?        // tests if value is missing
+						cScale(d.value): 	// uses colour scale if not missing
+						'red'                                    
+					)
+
+		    	// can only have one func to update a particular obj on mouseover, so put all changes to make in there
+		    	.on('mouseover', function(d) {       
+		    		this.style.fill ='green',
+		    		this.style.stroke = 'yellow'
+		    		callback_bars(d.target.__data__.values)
+		    	})
+
+		    	.on('mouseout', function(d) {       // action on unhover
+		    		this.style.fill = cScale(d.target.__data__.value)
+		    		this.style.stroke = 'black'
+		    	})
+
+		}
+
+
+
+
+
+
+
+		//let url = 'https://api.airtable.com/v0/apps8iEAx22CECofO/with_geo?api_key=keyWpfv8g3Q4QVUyW';
+
+		let url = 'https://lykp0rfls6.execute-api.eu-west-2.amazonaws.com/prod/camden-nongas?longitude_max=-0.15&longitude_min=-0.17&latitude_max=51.562&latitude_min=51.51'
+
+		//// jquery gets the data
+		$.getJSON(url, function(df) {
+
+    		map = d3.select('#mapbody_v2').call(zoom)
+    		map.selectAll("*").remove();
+    		child_map = map.append('g')      
+
+    		make_map(df)
+		});
+
+
+
+
+
+
+		/////// Interactive camden choropleth
+		let mapbody_interactive = d3.select('#mapbody_interactive_head').call(zoom)
+
+		// ensuring nothing is done until all files are loaded
+		Promise.all([
+			d3.csv('https://amplify-wildrydes-dev-90718-deployment.s3.eu-west-2.amazonaws.com/imd_pop_lsoa.csv'),
+			d3.json('https://amplify-wildrydes-dev-90718-deployment.s3.eu-west-2.amazonaws.com/camden_polys_noid.json'),
+			d3.csv('https://amplify-wildrydes-dev-90718-deployment.s3.eu-west-2.amazonaws.com/lsoa_crimes.csv')
+		]).then(show_map_data_interactive)
+		
+		var global_dataset;
+		
+
+		function show_map_data_interactive(dataSources) {
+
+
+			mapbody_interactive.selectAll("*").remove();  // deleting previous chart
+
+			//mapbody_interactive = mapbody_interactive.call(zoom)
+
+			g = mapbody_interactive.append('g')       /// making a child of map, makes zoom work
+				.attr('class', 'treemap-container')   /// name of class doesn't mean anything, could be anything
+
+
+			global_dataset = dataSources;  // making it globally available 
+
+			let mapInfo = dataSources[1]
+			let data = dataSources[0]
+			let lsoa_trends = dataSources[2]
+
+			console.log(data, mapInfo, typeof(mapInfo))
+
+			let selected_value = d3.select("#selectChoropleth")
+				.property("value")
+
+
+			let dataIndex = {}
+			for (let c of data) {         // making key/value pair of lsoa code and air quality numbers
+				let lsoa = c['LSOA Code']
+				dataIndex[lsoa] = +c.air_quality_indicator
+			}
+
+			let reverseDataIndex = {}
+			for (let c of data) {         // making key/value pair of lsoa code and air quality numbers
+				let lsoa = c['LSOA Code']
+				reverseDataIndex[lsoa] = 3 - +c.air_quality_indicator
+			}
+
+
+
+			let trendIndex = {}
+			for (let c of lsoa_trends) {         // to add 2nd csv trend columns
+				let lsoa = c['lsoa_code']
+				trendIndex[lsoa] = [+c['2015'], +c['2016'], +c['2017'], +c['2018'], +c['2019']] 
+			}
+
+			let  reverseIndex = {}			// to populate 2nd dropdown ('other trends'), which is passed to callback
+			for (let c of lsoa_trends) {         
+				let lsoa = c['lsoa_code']
+				reverseIndex[lsoa] = [+c['2019'], +c['2018'], +c['2017'], +c['2016'], +c['2015']] 
+			}
+
+
+			mapInfo.features = mapInfo.features.map(d => {
+				let lsoa = d.properties.lsoa_code
+				d.properties.air_quality_indicator = dataIndex[lsoa]
+				d.properties.reverse_air_quality_indicator = reverseDataIndex[lsoa]
+				d.properties.trends = trendIndex[lsoa]
+				d.properties.other_trends = reverseIndex[lsoa]
+				return d;
+			})
+
+			// scaling values for choropleth shading
+			let maxAir = d3.max(mapInfo.features, d => d.properties[selected_value])
+			console.log(maxAir)
+
+			let cScale = d3.scaleLinear()
+				.domain(d3.extent(mapInfo.features, d => d.properties[selected_value]))  // extent() finds min and max vals
+				.range(['white', 'blue'])
+
+			//console.log('properties')
+			//console.log(mapInfo.features[0].properties)
+
+			let bodyHeight = 400
+			let bodyWidth = 400
+
+
+			let Projection = d3.geoMercator()  // set projection
+				.translate([bodyWidth / 2, bodyHeight / 2])   // setting midpoint to centre of box
+				.scale(80)                 // zoom level (higher is further out)
+
+			let path = d3.geoPath()
+				.projection(Projection)    // initial path
+
+
+			/// getting bounds, centre point, scale
+			console.log(mapInfo, typeof(mapInfo))
+
+			let bounds = path.bounds(mapInfo);
+
+			var scale = 75  // this is needed in addition to the scale adjustment below
+
+			var hscale  = scale*bodyWidth  / (bounds[1][0] - bounds[0][0]);
+		    var vscale  = scale*bodyHeight / (bounds[1][1] - bounds[0][1]);
+		    var scale   = (hscale < vscale) ? hscale : vscale;
+		    var offset  = [bodyWidth - (bounds[0][0] + bounds[1][0])/2,
+                        bodyHeight - (bounds[0][1] + bounds[1][1])/1];
+
+            center= d3.geoCentroid(mapInfo)   // gets midpoint
+
+		    // updating projection to centre over certain area, scale and offset
+		    Projection = d3.geoMercator()
+		        .center(center)
+		        .scale(scale)
+		        .translate(offset)
+
+
+		    path = path.projection(Projection)
+
+
+		    console.log('map features')
+		    console.log(mapInfo.features)
+
+			g.selectAll('path')
+				.data(mapInfo.features)   // selecting features key from geojson
+				.enter().append('path')        // add new path for each datapoint
+				.attr('d', d => path(d))
+				.attr('stroke', 'black')      // boundary cols
+				.attr('fill', 
+					d => d.properties[selected_value] ?        // tests if value is missing
+						cScale(d.properties[selected_value]): 	// uses colour scale if not missing
+						'red'                                    
+					)
+
+		    	// can only have one func to update a particular obj on mouseover, so put all changes to make in there
+		    	.on('mouseover', function(d) {       
+		    		this.style.fill ='red',
+		    		this.style.stroke = 'yellow',
+		    		d3.select(id = '#map_text').html(
+		    			d.target.__data__.properties.lsoa_code + ' has air quality of:<br>' + d.target.__data__.properties.air_quality_indicator + ' (lower is better)'
+		    		),
+		    		showTooltip(d.target.__data__.properties.lsoa_code + ' <br> ' + d.target.__data__.properties.air_quality_indicator + ' <br> ' + d.target.__data__.properties.reverse_air_quality_indicator + '<br>' + d.target.__data__.properties[selected_value] + '<br>Selected val: ' + selected_value,
+		    			d3.pointer(event))
+		    		selectedLSOA = d.target.__data__.properties.lsoa_code,   // passed to line plot
+
+		    		// extracting the array named in the dropdown menu 
+		    		selectedTrends = d.target.__data__.properties[d3.select("#selectButton").property("value")]
+		    		drawLineChart(selectedTrends)
+		    	})
+
+		    	.on('mousemove', function(d) {   // makes tooltip follow mouse even if highlighted thing doesn't change
+		    		showTooltip(d.target.__data__.properties.lsoa_code + ' <br>Air qual: ' + d.target.__data__.properties.air_quality_indicator + ' <br>Rev air qual: ' + d.target.__data__.properties.reverse_air_quality_indicator + '<br>Selected: ' + d.target.__data__.properties[selected_value] + '<br>Selected val: ' + selected_value,
+		    			d3.pointer(event))
+		    	})
+
+		    	.on('mouseout', function(d) {       // action on unhover
+		    		this.style.fill = cScale(d.target.__data__.properties[selected_value])
+		    		this.style.stroke = 'black',
+		    		d3.select(id = '#map_text').html('<br><br>'),
+		    		d3.select('#tooltip').style('display', 'none')
+		    	})
+
+		    	//.merge(g.enter())		   // think this is required for callback to line plot, but makes no difference if dropped
+
+		}
+
+
+
+		function showTooltip(text, coords) {
+
+			//callback_plot._parents[0].clientHeight  // returns distance in px to bottom of element from top of page
+			let px_from_top_of_page = (+coords[1] + +callback_plot._parents[0].clientHeight - 470)
+			d3.select('#tooltip').html(text)
+				.style('top', px_from_top_of_page) 
+				.style('left', coords[0] + 30)
+				.style('display', 'block')  // changes css to make text visible
+		}
+
+
+
+		  /// Update map whenever dropdown option changes (ideally would do this without redownloading the data)
+		    d3.select("#selectChoropleth").on("change", function(d) {
+		    	//show_map_data_interactive(all_choropleth_data)
+				Promise.all([
+					d3.csv('https://amplify-wildrydes-dev-90718-deployment.s3.eu-west-2.amazonaws.com/imd_pop_lsoa.csv'),
+					d3.json('https://amplify-wildrydes-dev-90718-deployment.s3.eu-west-2.amazonaws.com/camden_polys_noid.json'),
+					d3.csv('https://amplify-wildrydes-dev-90718-deployment.s3.eu-west-2.amazonaws.com/lsoa_crimes.csv')
+				]).then(show_map_data_interactive)
+		    })
+	
+
+
+
+
+
+	</script>
+		
+</html>

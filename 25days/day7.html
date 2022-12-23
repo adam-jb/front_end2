@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<svg class="target" height="500" width="900" style="border:1px solid #ccc"/>
+<head>
+<script src="https://d3js.org/d3.v6.js"></script>  
+</head>
+<body>
+<script>
+
+
+// families of line curve settings here
+// https://github.com/d3/d3-shape/blob/v1.3.7/README.md#curves
+
+
+
+margin = ({
+  top: 10,
+  right: 80,
+  bottom: 30,
+  left: 35
+})
+
+height = 500
+width = 900
+
+
+// gets data
+x = d3.csv('https://raw.githubusercontent.com/TheEconomist/big-mac-data/master/output-data/big-mac-raw-index.csv')
+
+
+// performing operation on obtained data. This changes the promise, but you have to stay using promises from here on in
+// so may be easier to do everything inside the promise func here
+vals = x.then(function(x) {
+	dd =  x.map(({ date, name, dollar_price, iso_a3 }) => ({ name, iso: iso_a3, date: new Date(date), price: dollar_price }))
+	data = [
+		dd.filter(({ iso }) => iso === 'USA'),
+		dd.filter(({ iso }) => iso === 'SWE'),
+		dd.filter(({ iso }) => iso === 'CHN'),
+		dd.filter(({ iso }) => iso === 'EUZ')
+		]
+
+	const countryNames =  data.map(d => d[0].name)
+	colors = d3.scaleOrdinal( 
+	    countryNames,
+	    d3.schemeCategory10
+	  )
+
+	const startDate = data[0][0].date
+    const endDate = data[0][data[0].length - 1].date
+    xScale = d3.scaleTime(
+	    [ startDate, endDate ],    // domain
+	    [ margin.left, width - margin.right ]  // range
+	  )
+
+
+    const prices = data.flat().map(d => d.price)   // flat() makes single array of dicts, then taking 'price' values to return one array of vals
+    const yMax = d3.max( [...prices, 8] )
+    yScale = d3.scaleLinear(
+    	[ 1, yMax ],
+	    [ height - margin.bottom, margin.top ]
+	  )
+
+
+    const formatter = d3.format('$.2f')  // adds a $ and two decimal places
+    yAxis = d3.axisLeft(yScale)
+    	.tickFormat(d => formatter(d))
+
+    xAxis = d3.axisBottom(xScale)
+
+
+    line = d3.line()   // line to be based on date and price key/values
+	    .x(d => xScale(d.date))
+	    .y(d => yScale(d.price))
+	    .curve(d3.curveNatural)   // adds curves to lines
+
+
+	svg = d3.select('.target')    
+	svg	                           // makes lines
+		.selectAll('path')
+	    .data( data )   // bind data
+	    .join('path')   // add lines
+	      .attr('class', 'big-mac-line')   // appears to do nothing
+	      .attr('d', line)
+	      .style('stroke', d => colors(d[0].name))   // ordinal colour scaling
+	      .style('stroke-width', 2)
+	      .style('fill', 'transparent')
+
+
+	svg // puts labels to right of line
+	    .selectAll('text.label')
+	    .data( data )
+	    .join('text')
+	      .attr('class', 'label')
+	      .attr('x', width - margin.right + 5)  // ensures are just to the right
+	      .attr('y', d => yScale( d[d.length - 1].price ) + (d[0].name === 'Sweden' ? -10 : 0)) // set y val to be last yval of line 
+	      .attr('dy', '0.35em')
+	      .style('fill', d => colors(d[0].name))  
+	      .style('font-family', 'sans-serif')
+	      .style('font-size', 12)
+	    .text(d => d[0].name)         // value of 'name' key of first dict in array of dicts (which each country has)
+
+
+	svg
+	    .append('g')
+	      .attr('class', 'x-axis')
+	      .attr('transform', `translate(0,${ height - margin.bottom })`)
+	    .call(xAxis)
+
+
+	svg
+	    .append('g')
+	      .attr('class', 'y-axis')
+	      .attr('transform', `translate(${ margin.left },0)`)
+	    .call(yAxis)
+	    .selectAll('.domain').remove()  // hides axis line, leaving only labels and ticks
+
+
+})
+
+
+
+console.log(vals)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+</body>
+</html>

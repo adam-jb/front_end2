@@ -1,0 +1,389 @@
+
+<html>
+	<head>
+		<style>
+			/*   NOT right: attempt to make gridlines for plot in CSS;
+		body {.grid .tick {
+		    stroke: lightgrey;
+		    stroke-opacity: 0.7;
+		    shape-rendering: crispEdges;
+		}
+		.grid path {
+		          stroke-width: 0;
+		}
+	}
+	*/ 
+		</style>
+	</head>
+
+<body>
+
+
+		<div id="option">     <!-- button to run updateData() on click --> 
+    <input name="updateButton" 
+           type="button" 
+           value="Update" 
+           onclick="updateData()"/>
+	</div>
+
+
+	<p>
+  <label for="nRadius" 
+         style="display: inline-block; width: 120px; text-align: right">
+         Radius = <span id="nRadius-value">…</span>
+  </label>
+  <input type="range" min="1" max="150" id="nRadius">    <!-- slider input --> 
+</p>
+
+
+
+		<svg id = 'call' height = '99pc' width = '99pc', style="border:solid 1px black;">   <!-- to view output in svg -->
+			<g id = 'circle' style='transform: translate(0px, 0px);'></g>  <!-- calls contain_cats  -->
+		</svg>
+
+
+
+
+
+
+</body>
+
+
+<script src="https://d3js.org/d3.v6.js"></script>  
+<script>
+
+
+
+var inter = setInterval(function() {   //// running func every 5 secs
+            updateData();
+    }, 5000); 
+function updateData() {
+	console.log('data updated!')
+}
+
+/// to make pkg: date on x axis
+
+
+// create svg element:
+var svg = d3.select("#circle")  //.append("svg").attr("width", 200).attr("height", 200)
+
+
+data_to_bind = [{x:100, y:100, trend: [{x:50,y:100}, {x:200,y:300}, {x:250,y:300}], val:"abba", grp:"a"}, 
+				{x:200, y:150, trend: [{x:50,y:100}, {x:220,y:290}, {x:210,y:300}], val:"bc", grp:"a"}, 
+				{x:300, y:170, trend: [{x:50,y:100}, {x:290,y:201},{x:290,y:300}], val:"aoo", grp:"b"}, 
+				{x:400, y:131, trend: [{x:50,y:100}, {x:220,y:133}, {x:230,y:300}], val:"oxox", grp:"b"}]   // if making one circle, the first val in this array is linked to it (can be array of arrays, or anything else)
+
+
+
+//// circle responding to slider - SIDE EFFECT OF including this is first scatter point of data_to_bind isn't shown
+svg.append("circle")  
+  .attr("cx", 300)
+  .attr("cy", 150) 
+  .style("fill", "none")   
+  .style("stroke", "blue") 
+  .attr("r", 120)
+  .attr('transform', 'translate(0,350)')
+   .attr('id', 'megacircle')
+
+d3.select("#nRadius").on("input", function() { /// call 'update' function on change of nRadius input slider
+  update(+this.value);
+});
+
+function update(nRadius) {                 
+  d3.select("#nRadius-value").text(nRadius);      // change text of slider
+  svg.select('#megacircle').attr("r", nRadius)   // changes radius
+}
+//// end of circle
+
+
+
+
+
+
+
+
+///// 
+
+// text for brush
+var brush = svg.append("text")
+	.attr('x', 60)
+  	.attr('y', 40)
+  	.attr('stroke', 'black')
+  	//.attr('fill', '#69a3b2')
+  	.style('opacity', 0)
+  	.style('font-size', 12)
+  	.style('padding', '4px')
+  	.style('background-color', 'pink')
+  	.style('border', '4px')
+  	.text('value')
+  	//.classed("hidden", true)   /// another way of hiding. Show with: 	d3.select("#tooltip").classed("hidden", false);
+
+//// 
+
+
+
+//// point plot
+scaleX = d3.scaleLinear()
+	.domain([0, 400])
+	.range([0, 300])
+
+scaleY = d3.scaleLinear()
+	.domain([200, 0])
+	.range([0, 300])
+
+scale_colour_old = d3.scaleOrdinal()     // no longer used
+	.domain(['a', 'b'])
+	.range(d3.schemePaired);
+
+scale_colour_step1 = d3.scaleOrdinal()   // making numeric for viridis interpolator
+	.domain(['a', 'b'])
+	.range([0, 1])
+
+
+
+svg.selectAll("circle")
+	.data(data_to_bind)
+	.enter()
+	.append("circle")
+	  .attr('r', 10)
+	  .attr('cx', function(d) {return scaleX(d.x)})
+	  .attr('cy', function(d) {return scaleY(d.y)})
+	  .attr('stroke', 'black')
+	 // .attr('fill', function(d) {return d3.interpolateViridis(scale_colour_step1(d.grp))})
+	  .on("mouseover", function(event, d) {
+
+	  	d3.select(this).style("fill", "red");
+	  	d3.select(this).transition()       // increasing radius on hover
+	        .duration(250)
+	        .attr("r", function(d){return 12});
+
+		draw_curve(d.trend);
+		draw_curve_orig(d.trend);
+
+		brush.text(d.val)
+			.attr('x', scaleX(d.x) + 10)
+			.attr('y', scaleY(d.y) - 10)
+			.style('opacity', 1)
+
+	  })
+	  .on("mouseout", function(event, d) {
+
+	  	d3.selectAll("#callback_line").remove()  
+	  	brush.style('opacity', 0)
+
+	  	d3.select(this).style("fill", function(d) {console.log(scale_colour_step1(d.grp)); return d3.interpolateViridis(scale_colour_step1(d.grp))});
+	  	d3.select(this).transition()       
+	        .duration(250)
+	        .attr("r", function(d){return 10});
+
+	  })
+
+	  /// apply a style to a selection of the data's points, based on x values
+	 // .filter(function(d) { return scaleX(d.x) < 200 })    // <== criteria
+	  //  .style("fill", "red")                        // <== making 1+ changes
+
+/*
+	  .style("fill", function(d) {
+			if (d.x <= 200) {return “red”}
+			else {return “black”}
+		})  */
+
+	  .style("fill", function(d) {
+            if (d.x <= 200) {return "red"}
+            else 	{ return "black" }
+        ;})
+
+
+
+svg.append("g")
+	.call(d3.axisBottom(scaleX))
+	.attr("transform", "translate(40,310)")
+	
+
+svg.append("g")
+	.call(d3.axisLeft(scaleY))
+	.attr("transform", "translate(40,10)")
+
+
+
+
+
+/////// html table 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// line plot
+var scaleXscatter = d3.scaleLinear()
+	.domain([0, 300])
+	.range([0, 300])
+
+var scaleYscatter = d3.scaleLinear()
+	.domain([300, 0])
+	.range([0, 300])
+
+svg.append("g")
+	.call(d3.axisBottom(scaleXscatter))
+	.attr("transform", "translate(380,310)")
+
+svg.append("g")
+	.call(d3.axisLeft(scaleYscatter))
+	.attr("transform", "translate(380,10)")
+
+
+
+var linearGradient = svg.append("linearGradient")		 //////// for gradient to apply to a line (need to declare and draw line elsewhere, and when drawing it add: .attr("stroke", "url(#linear-gradient)"))		
+        .attr("id", "linear-gradient")			
+        .attr("gradientUnits", "userSpaceOnUse")	
+        .attr("x1", 0).attr("y1", scaleY(0))			
+        .attr("x2", 0).attr("y2", scaleY(300))		
+    .selectAll("stop")						
+        .data([								
+            {offset: "0%", color: "red"},		    
+            {offset: "30%", color: "red"},
+            {offset: "32%", color: "black"},
+            {offset: "35%", color: "black"},
+            {offset: "50%", color: "lawngreen"},            
+            {offset: "100%", color: "lawngreen"}	
+        ])					
+    .enter().append("stop")			
+        .attr("offset", function(d) { return d.offset; })	
+        .attr("stop-color", function(d) { return d.color; });	
+
+
+var curveFunc = d3.line()   // for curve: https://www.d3-graph-gallery.com/graph/shape.html#myline
+			// comment row below to remove curve
+   .curve(d3.curveBasis)              // This is where you define the type of curve. Listed: http://using-d3js.com/05_04_curves.html
+  .x(function(d) { return scaleXscatter(d.x) })
+  .y(function(d) { return scaleYscatter(d.y) })
+
+function draw_curve_orig(trend) {    // calls data and draws it
+svg.append("path")
+  .attr('d', curveFunc(trend))
+  //.attr('stroke', 'blue')
+  .attr("stroke", "url(#linear-gradient)")
+  .attr('stroke-width', 1.5)
+  .attr('fill', 'none')
+  .attr("transform", "translate(380,10)")
+  .attr('id', 'callback_line') 
+  .style("stroke-dasharray", ("10,3"))   /// makes line dashed (smaller numbers for smaller dashes)
+  //.style("stroke-linecap", "round")
+
+}
+
+
+
+var areaFunc = d3.area()
+        .x(function(d) { return scaleXscatter(d.x) })
+        .y0(scaleYscatter(0))
+        .y1(function(d) { return scaleYscatter(d.y) })
+        
+function draw_curve2(trend) {    // putting area under the curve - RENAME this func to go back to non-area line plot
+svg.append("path")
+  .attr('d', areaFunc(trend))
+  .attr('stroke', 'blue')
+  .attr('stroke-width', 0)
+  .attr('fill', 'steelblue')
+  .attr("transform", "translate(380,10)")
+  .attr('id', 'callback_fill')
+}
+
+
+
+
+
+var areaFunc_inverse = d3.area()    /////// To fill area above graph
+        .x(function(d) { return scaleXscatter(d.x) })
+        .y0(function(d) { return scaleYscatter(d.y) })
+        .y1(0)   /// set 0 as the top pixel (as lower pixel is higher)
+        
+function draw_curve(trend) {   
+console.log(d3.max(trend, d => d.x))
+svg.append("path")
+  .attr('d', areaFunc_inverse(trend))
+  .attr('stroke', 'blue')
+  .attr('stroke-width', 0)
+  .attr("stroke", "url(#linear-gradient)")
+  .attr('fill', 'steelblue')
+  .attr("transform", "translate(380,10)")
+  .attr('id', 'callback_line')       /// this has same id as other lines, so all can be removed at once with d3.selectAll('#callback_line').remove()
+  .attr('opacity', 0.3)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+// legend - 
+var grp = ['a', 'b']
+
+svg.selectAll("mydots")
+  .data(grp)
+  .enter()
+  .append("circle")
+    .attr("cx", 100)
+    .attr("cy", function(d,i){ return 100 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
+    .attr("r", 7)
+    .style("fill", function(d){return d3.interpolateViridis(scale_colour_step1(d))})
+    .attr('transform', 'translate(600, 0)')
+
+svg.selectAll("mylabels")
+  .data(grp)
+  .enter()
+  .append("text")
+    .attr("x", 120)
+    .attr("y", function(d,i){ return 100 + i*25}) // 100 is where the first dot appears. 25 is the distance between dots
+    .style("fill", function(d) {return d3.interpolateViridis(scale_colour_step1(d))})
+    .text(function(d){ return d})
+    .attr("text-anchor", "left")
+    .style("alignment-baseline", "middle")
+    .attr('transform', 'translate(600, 0)')
+
+
+
+
+
+</script>
+ </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

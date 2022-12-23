@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<svg class="target" height="500" width="900" style="border:1px solid #ccc"/>
+<head>
+<script src="https://d3js.org/d3.v6.js"></script>  
+</head>
+<body>
+<script>
+
+// lots of scaling options, inc customer colour schemes, here: https://www.d3indepth.com/scales/
+
+data = [
+  { year: 2005, value: 734.69 },
+  { year: 2006, value: 750.70 },
+  { year: 2007, value: 755.13 },
+  { year: 2008, value: 694.19 },
+  { year: 2009, value: 681.83 },
+  { year: 2010, value: 718.98 },
+  { year: 2011, value: 740.57 },
+  { year: 2012, value: 752.24 },
+  { year: 2013, value: 767.24 },
+  { year: 2014, value: 802.45 },
+  { year: 2015, value: 805.65 },
+  { year: 2016, value: 935.58 },
+  { year: 2017, value: 967.13 },
+  { year: 2018, value: 1007.24 },
+]
+
+height = 500
+width = 900
+
+margin = {
+  top: 10,
+  right: 10,
+  bottom: 20,
+  left: 35
+}
+
+yMax = d3.max(data, d => d.value)
+xDomain = data.map(d => d.year)  // range
+
+xScale = d3.scaleBand()    // breaks into bands - feels closer to scaleOrdinal(), though maybe retains some numeric data a la scaleLinear()
+    .domain( xDomain )    // xDomain is an array of 14 vals (different to scaleLinear())
+    .range([ margin.left, width - margin.right - margin.left ])
+    .padding(0.5)
+
+
+
+yScale = d3.scaleLinear()
+    .domain([ 0, yMax ])
+    .range([ height - margin.bottom, margin.top ])
+
+
+// creates axes (can think of these funcs as creating a load of SVG data which you can add to the chart)
+xAxis = d3.axisBottom(xScale)
+    .tickSizeOuter(0)   // removes tickmark from start and end of scale only (keeps the rest)
+yAxis = d3.axisLeft(yScale)
+    .tickSizeOuter(0)  
+    .tickSizeInner(0)  // removes all other axis ticks
+
+
+const svg = d3.select('.target')
+
+// make bars of the chart 
+ svg.append('g')
+    .attr('class', 'bars')
+    .selectAll('rect')
+    .data( data )
+    .join('rect')
+      .attr('class', 'bar')
+      .attr('x', d => xScale(d.year))
+      .attr('y', d => yScale(d.value))
+      .attr('width', xScale.bandwidth())   // bandwidth is func of scaleBand(), automatically getting best width of bar
+      .attr('height', d => yScale(0) - yScale(d.value))   // yScale(0) is height of chart, so minus from that invert (as d3 counts px from top)
+      .style('fill', '#7472c0')
+
+
+// add axes, setting position of them
+  svg.append('g')
+      .attr('class', 'x-axis')
+      .attr('transform', `translate(0,${ height - margin.bottom })`)  // set distance in px from top
+      .call( xAxis )  
+
+  svg.append('g')
+      .attr('class', 'y-axis')
+      .attr('transform', `translate(${margin.left}, 0)`)  // set distance in px from top
+      .call( yAxis )  
+
+
+
+
+
+
+
+
+
+
+
+</script>
+</body>
+</html>
+
+
+
+
+
+

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<svg class="target" height="300" width="300" style="border:1px solid #ccc"/>
+<svg class="target2" height="300" width="300" style="border:1px solid #ccc"/>
+
+<head>
+<script src="https://d3js.org/d3.v6.js"></script>  
+</head>
+<body>
+<script>
+
+// transition()  is for animations
+
+
+margin = ({
+  top: 10,
+  right: 10,
+  bottom: 10,
+  left: 10
+})
+
+width = 300
+height = 300
+
+
+
+svg = d3.select('.target')
+      .attr('width', width)
+      .attr('height', height)
+
+// 11x11 matrix (really an array of arrays); leads to 10x10 matrix of circles
+data = [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ].map(() => [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ])
+
+d = svg.selectAll('g')
+    .data(data)     // bind data
+    .join('g')
+      .attr('transform', (d,i) => `translate(0,${30 * i})`) // move element to right by pos in loop
+    .selectAll('rect')
+    .data(d => d)
+    .join('rect')
+      .attr('x', (d,i) => 30 * i)
+      .attr('height', 30)
+      .attr('width', 30)
+      .style('fill', '#4dbeff')  // all rects filled blue
+
+// so far this creates an array of array of rects - outerHTML component gives dimensions of them
+
+	   .on('mouseover', function(e, d) {
+        d3.select(this)
+          .transition()
+          .duration(100)    // 100ms for rect to go white
+            .style('fill', 'white')
+      })
+	   .on('mouseout', function(e, d) {
+        d3.select(this)
+          .transition()
+          .duration(2000)   // 2000ms to return to blue
+            .style('fill', '#4dbeff')
+      	})
+
+
+/// 2nd, overwriting svg obj
+svg = d3.select('.target2')
+      .attr('width', width)
+      .attr('height', height)
+
+data = d3.range(0, 100)  // range of 0 - 99
+
+circles = svg.selectAll('circle')
+    .data( data )
+    .join('circle')
+
+circles
+    .attr('cx', (d,i) => 15 + 30 * (i % 10))
+    .attr('cy', (d,i) => 15 + Math.floor( i/10 ) * 30)
+    .attr('r', 10)
+    .style('fill', '#ff5900')   
+// so far have made grid of circles
+	.on('click', (e, d) => {   // d gives you position of which circle clicked (in 1d list of circles)
+		clickX = d % 10
+		clickY = Math.floor(d / 10)  // extract x/y coords from pos in 1d list of circles
+		console.log(clickX, clickY, d)
+		console.log(circles._groups[0][d])
+		d3.select(circles._groups[0][d]) 
+			.transition()     // change colour on click
+            .duration(0)
+            .style('fill', '#4dbeff')
+            .transition()      // fade back to existing colour
+            .duration(1000)
+            .style('fill', '#ff5900')
+
+	})
+
+
+
+
+
+</script>
+</body>
+</html>

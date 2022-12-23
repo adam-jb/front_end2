@@ -1,0 +1,368 @@
+
+<html>
+	<head>
+		<title>Site</title>
+
+		<!-- <link rel="stylesheet" href="styles.css" /> -->
+		<!-- this could be standalone CSS using line above to source -->
+		<style>
+			p {
+				color: black;
+				padding: 10px;
+			}
+
+			h1:hover{
+				color:green;
+			}
+
+			button:hover{
+				background-color: blue;
+				color: red;
+			}
+
+			.line{      /* for line plot */
+				fill: none;
+				stroke: lightblue;
+			}
+
+			#tooltip{      
+				color: green;
+				position: absolute;     /* makes it possible to move the text around */
+				border: 1px black solid;
+				padding: 10px;
+				background-color: white;
+				display: none;      /* starts off hidden */
+				'top': 200)
+				'left': 200)
+			}
+
+			#map {
+			  width: 960px;
+			  height: 500px;
+			}
+
+
+
+		</style>
+
+		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+		   integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+		   crossorigin=""/>
+
+	</head>
+	<body>
+
+
+		<div>   Select for choropleth: </div>
+		<select id="selectChoropleth"></select>
+		<br>
+
+
+
+
+		<svg id = 'mapbody_interactive_head' height = 400 width = '400', style="border:solid 1px black;">   <!-- to view output in svg -->
+		 <!-- 	<g id = 'mapbody_interactive' style='transform: translate(0px, 0px);'></g>  -->
+		</svg>
+
+
+
+
+		<div id = 'tooltip'>Tooltip</div>
+
+		<div id = 'map_text'>
+			LSOA info....
+		</div>
+
+
+
+
+	</body>
+
+
+	<script src="https://d3js.org/d3.v6.js"></script>  
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script src="https://unpkg.com/json5@^2.0.0/dist/index.min.js"></script>   <!-- to parse single quotes text as json -->
+
+
+
+
+	<script>
+
+
+
+
+		// populate values for choropleth dropdown menus
+		var allGroup = ['reverse_air_quality_indicator', "air_quality_indicator"]
+		d3.select("#selectChoropleth")
+		      .selectAll('myOptions')
+		     	.data(allGroup)
+		      .enter()
+		    	.append('option')
+		      .text(function (d) { return d; }) // text showed in the menu
+		      .attr("value", function (d) { return d; })  
+
+
+
+		var d = new Date();
+		var time_counter = d.getTime()
+
+		// initial map centroids
+		var longitude_init_centroid = 51.5528   //// originals 51.5428
+		var latitude_init_centroid = -0.1624   /// -0.1594
+		var lat_long_px_scale = 3394          // pixels in 1 unit of long/lat    ///init1
+
+
+
+
+
+		/////// Interactive camden choropleth
+		let mapbody_interactive = d3.select('#mapbody_interactive_head')
+
+		// ensuring nothing is done until all files are loaded
+		Promise.all([
+			d3.csv('https://amplify-wildrydes-dev-90718-deployment.s3.eu-west-2.amazonaws.com/imd_pop_lsoa.csv'),
+			d3.json('https://amplify-wildrydes-dev-90718-deployment.s3.eu-west-2.amazonaws.com/camden_polys_noid.json'),
+			d3.csv('https://amplify-wildrydes-dev-90718-deployment.s3.eu-west-2.amazonaws.com/lsoa_crimes.csv')
+		]).then(show_map_data_interactive)
+		
+		var global_dataset;
+
+
+		function show_map_data_interactive(dataSources) {
+
+
+			mapbody_interactive.selectAll("*").remove();  // deleting previous chart
+
+			//mapbody_interactive = mapbody_interactive.call(zoom)
+
+			g = mapbody_interactive.append('g')       /// making a child of map, makes zoom work
+				.attr('class', 'treemap-container')   /// name of class doesn't mean anything, could be anything
+
+
+			global_dataset = dataSources;  // making it globally available 
+
+			
+		 	var mapInfo = dataSources[1]
+			let data = dataSources[0]
+			let lsoa_trends = dataSources[2]
+
+			console.log(data, mapInfo, typeof(mapInfo))
+
+			let selected_value = d3.select("#selectChoropleth")
+				.property("value")
+
+
+			let dataIndex = {}
+			for (let c of data) {         // making key/value pair of lsoa code and air quality numbers
+				let lsoa = c['LSOA Code']
+				dataIndex[lsoa] = +c.air_quality_indicator
+			}
+
+			let reverseDataIndex = {}
+			for (let c of data) {         // making key/value pair of lsoa code and air quality numbers
+				let lsoa = c['LSOA Code']
+				reverseDataIndex[lsoa] = 3 - +c.air_quality_indicator
+			}
+
+
+
+			let trendIndex = {}
+			for (let c of lsoa_trends) {         // to add 2nd csv trend columns
+				let lsoa = c['lsoa_code']
+				trendIndex[lsoa] = [+c['2015'], +c['2016'], +c['2017'], +c['2018'], +c['2019']] 
+			}
+
+			let  reverseIndex = {}			// to populate 2nd dropdown ('other trends'), which is passed to callback
+			for (let c of lsoa_trends) {         
+				let lsoa = c['lsoa_code']
+				reverseIndex[lsoa] = [+c['2019'], +c['2018'], +c['2017'], +c['2016'], +c['2015']] 
+			}
+
+
+			mapInfo.features = mapInfo.features.map(d => {
+				let lsoa = d.properties.lsoa_code
+				d.properties.air_quality_indicator = dataIndex[lsoa]
+				d.properties.reverse_air_quality_indicator = reverseDataIndex[lsoa]
+				d.properties.trends = trendIndex[lsoa]
+				d.properties.other_trends = reverseIndex[lsoa]
+				return d;
+			})
+
+			console.log(mapInfo.features)
+			console.log(mapInfo)
+
+			// scaling values for choropleth shading
+			let maxAir = d3.max(mapInfo.features, d => d.properties[selected_value])
+			console.log(maxAir)
+
+			let cScale = d3.scaleLinear()
+				.domain(d3.extent(mapInfo.features, d => d.properties[selected_value]))  // extent() finds min and max vals
+				.range(['white', 'blue'])
+
+			//console.log('properties')
+			//console.log(mapInfo.features[0].properties)
+
+			let bodyHeight = 400
+			let bodyWidth = 400
+
+
+			let Projection = d3.geoMercator()  // set projection
+				.translate([bodyWidth / 2, bodyHeight / 2])   // setting midpoint to centre of box
+				.scale(80)                 // zoom level (higher is further out)
+
+			let path = d3.geoPath()
+				.projection(Projection)    // initial path
+
+
+			/// getting bounds, centre point, scale
+			console.log(mapInfo, typeof(mapInfo))
+
+			let bounds = path.bounds(mapInfo);
+
+			var scale = 75  // this is needed in addition to the scale adjustment below
+
+			var hscale  = scale*bodyWidth  / (bounds[1][0] - bounds[0][0]);
+		    var vscale  = scale*bodyHeight / (bounds[1][1] - bounds[0][1]);
+		    var scale   = (hscale < vscale) ? hscale : vscale;
+		    var offset  = [bodyWidth - (bounds[0][0] + bounds[1][0])/2,
+                        bodyHeight - (bounds[0][1] + bounds[1][1])/1];
+
+            center= d3.geoCentroid(mapInfo)   // gets midpoint
+
+		    // updating projection to centre over certain area, scale and offset
+		    Projection = d3.geoMercator()
+		        .center(center)
+		        .scale(scale)
+		        .translate(offset)
+
+
+		    path = path.projection(Projection)
+
+
+		    console.log('map features')
+		    console.log(mapInfo.features)
+
+			g.selectAll('path')
+				.data(mapInfo.features)   // selecting features key from geojson
+				.enter().append('path')        // add new path for each datapoint
+				.attr('d', d => path(d))
+				.attr('stroke', 'black')      // boundary cols
+				.attr('fill', 
+					d => d.properties[selected_value] ?        // tests if value is missing
+						cScale(d.properties[selected_value]): 	// uses colour scale if not missing
+						'red'                                    
+					)
+
+		    	// can only have one func to update a particular obj on mouseover, so put all changes to make in there
+		    	.on('mouseover', function(d) {       
+		    		this.style.fill ='red',
+		    		this.style.stroke = 'yellow',
+		    		d3.select(id = '#map_text').html(
+		    			d.target.__data__.properties.lsoa_code + ' has air quality of:<br>' + d.target.__data__.properties.air_quality_indicator + ' (lower is better)'
+		    		),
+		    		showTooltip(d.target.__data__.properties.lsoa_code + ' <br> ' + d.target.__data__.properties.air_quality_indicator + ' <br> ' + d.target.__data__.properties.reverse_air_quality_indicator + '<br>' + d.target.__data__.properties[selected_value] + '<br>Selected val: ' + selected_value,
+		    			d3.pointer(event))
+		    		selectedLSOA = d.target.__data__.properties.lsoa_code,   // passed to line plot
+
+		    		// extracting the array named in the dropdown menu 
+		    		selectedTrends = d.target.__data__.properties[d3.select("#selectButton").property("value")]
+		    		drawLineChart(selectedTrends)
+		    	})
+
+		    	.on('mousemove', function(d) {   // makes tooltip follow mouse even if highlighted thing doesn't change
+		    		showTooltip(d.target.__data__.properties.lsoa_code + ' <br>Air qual: ' + d.target.__data__.properties.air_quality_indicator + ' <br>Rev air qual: ' + d.target.__data__.properties.reverse_air_quality_indicator + '<br>Selected: ' + d.target.__data__.properties[selected_value] + '<br>Selected val: ' + selected_value,
+		    			d3.pointer(event))
+		    	})
+
+		    	.on('mouseout', function(d) {       // action on unhover
+		    		this.style.fill = cScale(d.target.__data__.properties[selected_value])
+		    		this.style.stroke = 'black',
+		    		d3.select(id = '#map_text').html('<br><br>'),
+		    		d3.select('#tooltip').style('display', 'none')
+		    	})
+
+		    	//.merge(g.enter())		   // think this is required for callback to line plot, but makes no difference if dropped
+
+		}
+
+
+
+		function showTooltip(text, coords) {
+
+			//callback_plot._parents[0].clientHeight  // returns distance in px to bottom of element from top of page
+			let px_from_top_of_page = (+coords[1] + 0)
+			d3.select('#tooltip').html(text)
+				.style('top', px_from_top_of_page) 
+				.style('left', coords[0] + 30)
+				.style('display', 'block')  // changes css to make text visible
+		}
+
+
+
+		  /// Update map whenever dropdown option changes (ideally would do this without redownloading the data)
+		/*    d3.select("#selectChoropleth").on("change", function(d) {
+		    	//show_map_data_interactive(all_choropleth_data)
+				Promise.all([
+					d3.csv('https://amplify-wildrydes-dev-90718-deployment.s3.eu-west-2.amazonaws.com/imd_pop_lsoa.csv'),
+					d3.json('https://amplify-wildrydes-dev-90718-deployment.s3.eu-west-2.amazonaws.com/camden_polys_noid.json'),
+					d3.csv('https://amplify-wildrydes-dev-90718-deployment.s3.eu-west-2.amazonaws.com/lsoa_crimes.csv')
+				]).then(show_map_data_interactive)
+		    })
+	*/
+
+
+		function update_choropleth(mapInfo) {
+
+			let selected_value = d3.select("#selectChoropleth")
+				.property("value")
+
+			mapbody_interactive				
+				.attr('fill', 
+					d => d.properties[selected_value] ?        // tests if value is missing
+						cScale(d.properties[selected_value]): 	// uses colour scale if not missing
+						'red'                                    
+					)
+
+		}
+
+
+
+console.log(global_dataset)
+
+
+
+		/// update map on dropdown change
+		d3.select("#selectChoropleth").on("change", function(d) {
+
+
+		 	var mapInfo = dataSources[1]
+			let data = dataSources[0]
+			let lsoa_trends = dataSources[2]
+
+
+			console.log('calling func')
+			console.log(mapbody_interactive)
+
+
+			let selected_value = d3.select("#selectChoropleth")
+				.property("value")
+
+			mapbody_interactive				
+				.attr('fill', 
+					d => d.properties[selected_value] ?        // tests if value is missing
+						cScale(d.properties[selected_value]): 	// uses colour scale if not missing
+						'red'                                    
+					)
+
+
+
+		})
+
+
+
+
+
+
+	</script>
+		
+</html>

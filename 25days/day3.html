@@ -1,0 +1,67 @@
+
+<!DOCTYPE html>
+<html>
+<svg class="target" height="160" width="160" style="border:1px solid #ccc"/>
+<svg class="second_target" height="160" width="160" style="border:1px solid #ccc"/>
+
+<head>
+<script src="https://d3js.org/d3.v6.js"></script>  
+</head>
+<body>
+<script>
+
+
+data = [
+    { name: 'a', value: 1 }, 
+    { name: 'b', value: 2 }, 
+    { name: 'c', value: 3 },
+    { name: 'd', value: 5 },
+    { name: 'e', value: 8 }
+  ]
+
+
+const svg = d3.select('.target')
+
+
+ svg.selectAll('circle')
+ 	.data( data )   
+ 	.enter()              // .enter() followed by .append('circle') works the same as simply .join('circle')
+ 	.append('circle')
+	 	.attr('r', (d) => d.value * 10)   // calling value key in dict 'data'
+	    .attr('cx', (d) => d.value * 10)
+	    .attr('cy', 80)
+	    .attr('fill', 'transparent')
+	    .attr('stroke', 'steelblue')
+
+
+// repeating to confirm that .enter() followed by .append('circle') works the same as simply .join('circle'): it does!
+ d3.select('.second_target')
+ 	.selectAll('circle')
+ 	.data( data )   
+ 	.join('circle')              
+	 	.attr('r', (d) => d.value * 10)   // calling value key in dict 'data'
+	    .attr('cx', (d) => d.value * 10)
+	    .attr('cy', 80)
+	    .attr('fill', 'transparent')
+	    .attr('stroke', 'steelblue')
+
+
+
+
+svg.selectAll('text')
+  .data( data )
+  .enter().append('text')
+    .attr('x', (d) => d.value * 10 * 2)
+    .attr('y', 80)
+    .attr('dy', '0.35em')     // dy = coordinates relative to x
+    						// 0.35em is a magic number, having some special use: here make txt vertically centered
+    .attr('text-anchor', 'end')  // sets text to be to left of lines (would be to right if param was 'start')
+    .text(d => d.name)
+
+
+
+</script>
+</body>
+</html>
+
+

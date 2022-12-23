@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<svg class="target" height="500" width="900" style="border:1px solid #ccc"/>
+<head>
+<script src="https://d3js.org/d3.v6.js"></script>  
+</head>
+<body>
+<script>
+
+
+margin = ({
+  top: 10,
+  right: 0,
+  bottom: 30,
+  left: 30
+})
+
+width = 900
+height = 500
+
+
+// CORS policies already in place for this S3 bucket
+data = d3.csv('https://amplify-wildrydes-dev-90718-deployment.s3.eu-west-2.amazonaws.com/data.csv')
+
+data.then(function(data) {
+
+
+// get unique categories and add them to data
+cats = Object.keys(data[0]).slice(2, 6)
+console.log(cats)
+data['categories'] = cats
+
+
+colors = d3.scaleOrdinal(
+	data.categories,
+	d3.schemeGnBu[9].slice(3)
+)
+
+xScale = d3.scaleBand(          // place x by country category
+  data.map(d => d.location),
+  [ margin.left, width - margin.right ]
+).padding(0.2)
+
+yScale = d3.scaleLinear(
+  [ 0, d3.max(data, d => d.total) ],
+  [ height - margin.bottom, margin.top ]
+)
+console.log(d3.max(data, d => d.total))
+
+xAxis = d3.axisBottom(xScale)
+    .tickSizeOuter(0)
+
+yAxis = d3.axisLeft(yScale)
+
+
+stack = d3.stack()
+  .keys( data.categories )  // 'keys' param tells it which categories to group by
+
+
+const svg = d3.select('.target')
+      .attr('width', width)
+      .attr('height', height)
+
+const chartData = stack( data )  // getting 4 arrays (as 4 unique categories), each of len 36 (as input array had 36 dicts)
+
+
+const groups = svg.append('g')
+    .selectAll('g')    // Each layer of the stack goes in a group, where a group has that layer for all countries
+    .data( chartData )
+    .join('g')
+      .style('fill', (d,i) => colors(d.key))     // same layer rects have same colour. 'key' of layers array sets colour
+
+console.log(chartData)
+console.log(data)
+
+
+groups.selectAll('rect')
+    .data(d => d)
+    .join('rect')
+      .attr('x', d => xScale(d.data.location))   
+      .attr('y', d => yScale(d[1]))     /// think d[1] gives top of y pos of particular rect, d[0] gives bottom of it, in px after yScale
+      //.attr('y', function(d) {console.log(yScale(d[0]), yScale(d[1])); return yScale(d[1])})  // same as above, printing more
+      .attr('height', d => yScale(d[0]) - yScale(d[1]))
+      .attr('width', xScale.bandwidth())
+
+
+svg.append('g')
+    .attr('transform', `translate(0,${ height - margin.bottom })`)
+    .call(xAxis)
+  
+  svg.append('g')
+    .attr('transform', `translate(${ margin.left },0)`)
+    .call(yAxis)
+    .select('.domain').remove()
+
+
+
+})
+
+
+
+</script>
+</body>
+</html>

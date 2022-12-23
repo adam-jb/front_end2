@@ -1,0 +1,88 @@
+
+<!-- using https://bl.ocks.org/ericsoco/7eebab15da4bb1040977da508aebbff6 -->
+
+<html>
+<head>
+
+	<style>
+		circle {
+	  fill: orange;  
+		}
+	</style>
+
+
+	Hi<br>
+
+
+</head>
+<body>
+
+<script src="https://d3js.org/d3.v6.js"></script>  
+
+<!-- Don't need the below it turns out -->
+<!-- <script src="https://unpkg.com/d3-force-attract@0.1.1/dist/d3-force-attract.js"></script>  -->
+
+<script>
+
+
+var width = 500,
+    height = 500,
+    radius = 20;
+
+var nodes = [{
+  x: width * Math.random(),
+  y: height * Math.random(),
+  r: radius
+}];
+
+
+// set up attract force to pull nodes toward mouse location  
+var simulation = d3.forceSimulation()
+  //.force('center',d3.forceCenter(width / 2, height / 2))
+  //.force('attract', d3.forceAttract()
+    //.target([width / 2, height / 2]))
+  .on('tick', layoutTick)
+  .nodes(nodes);
+
+var svg = d3.select('body').append('svg')
+    .attr('width', width)
+    .attr('height', height);
+
+var node = svg.selectAll('circle')
+  .data(nodes)
+  .enter().append('circle')
+    .attr('cx', function (d) { return d.x; })
+    .attr('cy', function (d) { return d.y; })
+    .attr('r', function (d) { return d.r; });
+
+svg.on('mousemove', function () {
+    simulation
+    	.force('centre', d3.forceCenter(d3.pointer(event)[0], d3.pointer(event)[1]) // need to input x and y mouse positions separately
+    		.strength(0.03));     // how strong is the force between circle and mouse; make negative to repel
+    simulation
+      .alphaTarget(1)  // affects how the shape tracks the mouse (in exaggerated fashion, or inverse, or something else)
+      .restart();
+  });
+  
+function layoutTick () {
+  node
+    .attr('cx', function (d) { return d.x; })
+    .attr('cy', function (d) { return d.y; });
+}
+
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

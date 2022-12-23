@@ -1,0 +1,35 @@
+
+<!DOCTYPE html>
+<html>
+<svg class="target" height="40" width="400" style="border:1px solid #ccc"/>
+<head>
+<script src="https://d3js.org/d3.v6.js"></script>  
+</head>
+<body>
+<script>
+
+
+const svg = d3.select('.target')   // select class
+
+const data = [ 0, 1, 2, 3, 8]
+
+const rects = svg.selectAll('rect')  
+
+// fill, width, height, top right corner 
+ rects
+ 	.data(data)        // add a rect for each data element
+ 	.join('rect')      // to do with appending rects
+
+ 		// SETTING style for all 5 rects at once
+	    .style('fill', 'black') // rect's fill color
+	    .attr('height', 20) // rect's height (in pixels)
+	    .attr('width', 20) // rect's width (in pixels)
+	    .attr('x', (d, i) => {return d * 30 + 10 * i}) // 'return' is necessary. i is iter, d is val from array 'data'
+	    .attr('y', 10) // y position of the top-left corner
+
+
+   </script>
+</body>
+</html>
+
+

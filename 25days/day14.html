@@ -1,0 +1,87 @@
+
+
+<!DOCTYPE html>
+<html>
+<svg class="target" height="700" width="900" style="border:1px solid #ccc"/>
+
+<head>
+<script src="https://d3js.org/d3.v6.js"></script>  
+</head>
+<body>
+<script>
+
+
+margin = ({
+  top: 10,
+  right: 10,
+  bottom: 10,
+  left: 10
+})
+
+width = 600
+height = 600
+rectWidth = 30
+
+
+const svg = d3.select('.target')
+  .attr('width', width)
+  .attr('height', height)
+
+const rects = d3.range( Math.ceil(height/rectWidth) * Math.ceil(width/rectWidth)  )  // array of incremental values for each rect
+
+
+
+// tell d3.drag() what to do when: start, during, end of dragging
+ function dragStart(d) {
+    d3.select( this )
+        .raise()                   // puts rect in front of other elements
+        .style('stroke', 'black')
+  }
+  
+  function dragging(d) {
+    d3.select( this )
+        .attr('x', event.x - rectWidth/2)
+        .attr('y', event.y - rectWidth/2)
+         .style('fill', () => {     // invert colours as you drag
+           return d3.interpolateSpectral(1 - Math.hypot(event.x, event.y) / Math.hypot( width, height ) )
+         })
+  }
+  
+  function dragEnd(d) {
+    d3.select( this ).style('stroke', 'white')
+  }
+
+  drag = d3.drag()
+      .on('start', dragStart)
+      .on('drag', dragging)
+      .on('end', dragEnd)
+
+chart = svg.selectAll('rect')
+    .data( rects )
+    .join('rect')
+      .attr('class', d => 'rect-' + d)
+      .attr('width', rectWidth)
+      .attr('height', rectWidth)
+      .attr('x', (d,i) => rectWidth * (i % (width/rectWidth)))
+      .attr('y', (d,i) => Math.floor( i/(width/rectWidth) ) * rectWidth)
+      .style('stroke', 'white')
+      .style('cursor', 'pointer')
+      .style('fill', (d,i) => {
+        const x = rectWidth * (i % (width/rectWidth)),
+              y = Math.floor( i/(width/rectWidth) ) * rectWidth,
+              dist = Math.hypot( x, y )
+        
+        xx = d3.interpolateSpectral( dist / Math.hypot( width, height ) )  //hypot does pythagoras of inputs; 
+        			// interpolateSpectral returns rgb based on 0 - 1 range
+        return xx
+      })
+      .call(drag)
+
+
+
+
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<svg class="target" height="500" width="900" style="border:1px solid #ccc"/>
+<head>
+<script src="https://d3js.org/d3.v6.js"></script>  
+</head>
+<body>
+<script>
+
+// paths: lines that aren't straight
+// donuts / pies are made up of lines (arcs for things with radians)
+
+USData = [
+  { type: 'Poultry', value: 48.9954 },
+  { type: 'Beef', value: 25.9887 },
+  { type: 'Pig', value: 22.9373 },
+  { type: 'Sheep', value: 0.4869 }
+]
+height = 500
+width = 900
+
+const colors = [ '#976393', '#685489', '#43457f', '#ff9b83' ]
+colorScale = d3.scaleOrdinal( USData.map(d => d.type), colors )   // assigning colours to meat types
+
+arc = d3.arc()
+    .innerRadius( 0.5 * height / 2 )
+    .outerRadius( 0.85 * height / 2 )
+
+pie = d3.pie()
+  .value(d => d.value)
+
+labelArcs = d3.arc()    // arc generator with wider radius for labels
+    .innerRadius( 0.95 * height / 2 )
+    .outerRadius( 0.95 * height / 2 )
+
+
+pieArcs = pie(USData)   // gets angles in radians (engAngle, startAngle) along with dict 'data' of type and value from original dict
+
+svg = d3.select('.target')
+
+svg.append('g')
+	  .attr('class', 'donut-container')
+	  .attr('transform', `translate(${ width / 2 },${ height / 2 })`)   // centre of donut
+	.selectAll('path')
+	.data( pieArcs )   // bind data with radius and other info
+	.join('path')
+	  .style('stroke', 'white')   // outline
+	  .style('stroke-width', 2)
+	  .style('fill', d => colorScale( d.data.type ))   // scale colour ordinallyn
+	  //.attr('d', arc)       // arc is a func which d is passed to. d is also name of attribute arc() is applied to
+	  .attr('d', d => arc(d))    // does same as commented out line about
+
+
+
+ const text = svg.append('g')
+      .attr('class', 'labels-container')
+      .attr('transform', `translate(${ width / 2 },${ height / 2 })`)   // centre of donut
+    .selectAll('text')
+    .data( pieArcs )
+    .join('text')
+      .attr('transform', d => `translate(${ labelArcs.centroid(d) })`)  // middle of that particular arc
+      .attr('text-anchor', 'middle')
+
+
+// think data is already selected, and some formatting done, by declaration of 'text' obj above
+ text.selectAll('tspan')  // need to add this to show text. tspan = child of text element
+    .data( d => [               // transforming data as it's bound into arrays of len 2 . d.data accesses incoming data
+      d.data.type, 
+      d.data.value.toFixed(1) + ' kg'    // concatenating ' kg' to text (these are labels)
+    ])
+    .join('tspan')
+      .attr('x', 0)
+      .style('font-family', 'sans-serif')
+      .style('font-size', 12)
+      .style('font-weight', (d,i) => i ? undefined : 'bold')
+      .style('fill', '#222') 
+      .attr('dy', (d,i) => i ? '1.2em' : 0 ) // if i != 0 then change dy by 1.2em (1.2 * font size). i will be 0 or 1 in this case, as arrays are of len 2
+      .text(d => d)
+
+
+
+</script>
+</body>
+</html>

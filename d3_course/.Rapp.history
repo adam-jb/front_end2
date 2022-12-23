@@ -1,0 +1,41 @@
+?withTimeout
+help('withTimeout')
+library(R.utils)
+help('withTimeout')
+withTimeout(1+1, 2)
+help('withTimeout')
+withTimeout(1+1, timeout = 2)
+withTimeout(1+3, timeout = 2)
+help('withTimeout')
+pwd
+getwd()
+setwd("/Users/apple/Desktop/front_end/d3_course")
+list.files()
+a = c('adam', 'ben', 'fran')
+height = c(14, 16, 15)
+weight = c(1, 2, 3)
+x = data.frame(name = a, height = height, weight = weight)
+x
+fwrite(x, 'names.csv')
+library(data.table)
+fwrite(x, 'names.csv')
+setwd()'/Users/apple/Desktop/front_end/d3_course')
+setwd('/Users/apple/Desktop/front_end/d3_course')
+list.files()
+x = fread("crime_collision_trends_lsoa.csv")
+library(dplyr)
+colnames(x)
+y = x %>% group_by(lsoa_code, year) %>% summarise(count = sum(count, na.rm = T), collisions_casualties = sum(collisions_casualties, na.rm = T), collisions_count = sum(collisions_count, na.rm = T))
+dim(y)
+dim(x)
+head(y)
+fwrite(y, 'lsoa_trends_annual.csv')
+z = fread('lsoa_trends_annual.csv')
+z
+z = z[, 1:3]
+z
+?dcast
+z %>% dcast(lsoa_code ~ year, value.var = 'count', fun = 'sum')
+z %>% dcast(lsoa_code ~ year, value.var = 'count')
+a = z %>% dcast(lsoa_code ~ year, value.var = 'count')
+fwrite(a, 'lsoa_crimes.csv')

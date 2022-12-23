@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<svg class="target" height="500" width="900" style="border:1px solid #ccc"/>
+<head>
+<script src="https://d3js.org/d3.v6.js"></script>  
+</head>
+<body>
+<script>
+
+// .each() loops over each element
+// .call() is very similar, however acts on element itself (so a single recipient, no loop)
+
+
+// extract of https://data.world/garyhoov/largest-food-packaged-goods-companies-2016
+data = [
+{company: 'Johnson & Johnson', revenues_mm: '71890', profit_mm: '18540', profit_as_of_revenues: '0.2579', category: 'Pharmaceuticals'},
+{company: 'Procter & Gamble', revenues_mm: '71726', profit_mm: '10508', profit_as_of_revenues: '0.1465', category: 'Household & Personal Products'},
+{company: 'Pepsico', revenues_mm: '62789', profit_mm: '6329', profit_as_of_revenues: '0.1008', category: 'Food'},
+{company: 'Pfizer', revenues_mm: '52824', profit_mm: '7215', profit_as_of_revenues: '0.1366', category: 'Pharmaceuticals'}
+]
+
+
+margin = ({
+  top: 10,
+  right: 100,
+  bottom: 30,
+  left: 50
+})
+
+width = 900
+height = 500
+
+xScale = d3.scaleLinear(
+  d3.extent( data, d => parseInt(d.revenues_mm) ),  // d3.extent() gets it wrong if you don't parseInt() the input
+  [ margin.left, width - margin.right ]
+)
+
+
+yScale = d3.scaleLinear(
+  d3.extent( data, d => parseInt(d.profit_mm) ),
+  [ height - margin.bottom, margin.top ]
+)
+
+colors = d3.scaleOrdinal().range(d3.schemeCategory10) // automatically handle up to 10 categories, don't need to specify in advance
+
+xAxis = d3.axisBottom(xScale)
+yAxis = d3.axisLeft(yScale)
+
+
+
+
+const g = d3.select('.target')      // creating group with text params
+	  .append('g')
+      .style('font-family', 'sans-serif')
+      .style('font-size', 10)
+
+
+a = g
+    .selectAll('g')
+    .data( data )  // bind data
+    .join('g')      // each data point is a group
+      .attr('class', 'scatter-point')    
+      .attr('transform', d => `translate(${xScale(parseInt(d.revenues_mm))},${yScale(parseInt(d.profit_mm))})`)  
+    .call(g => g                      // takes current d3 selection... good if want to add a thing but keep using original selection
+      .append('circle')  
+        .attr('r', 5)
+        .style('stroke', d => colors( d.category ))
+        .style('stroke-width', 2)
+        .style('fill', 'transparent')
+    )
+    .call(g => g    // add text
+      .append('text')
+        .attr('x', 8)
+        .attr('y', 0)
+        .attr('dy', '0.35em')
+      .text(d => d.revenues_mm < 10000 ? '' : d.company)  // remove outliers
+     )
+
+
+d3.select('.target')
+    .append('g')
+      .attr('class', 'y-axis')
+      .attr('transform', `translate(${ margin.left },0)`)
+    .call(yAxis)
+      // remove the line between the ticks and the chart
+      .select('.domain').remove()
+  
+d3.select('.target')
+    .append('g')
+      .attr('class', 'x-axis')
+      .attr('transform', `translate(0,${ height - margin.bottom })`)
+    .call(xAxis)
+      // remove the line between the ticks and the chart
+      .select('.domain').remove()
+  
+
+// look for outerHTML in obj to get coordinates
+
+
+
+
+
+</script>
+</body>
+</html>

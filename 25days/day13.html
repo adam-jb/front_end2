@@ -1,0 +1,172 @@
+
+
+<!-- building on day 10's treemap 
+
+good zoom example: https://observablehq.com/@d3/delaunay-find-zoom?collection=@d3/d3-zoom
+
+-->
+
+
+<!DOCTYPE html>
+<html>
+<svg class="target" height="700" width="900" style="border:1px solid #ccc"/>
+
+<head>
+<script src="https://d3js.org/d3.v6.js"></script>  
+</head>
+<body>
+<script>
+
+
+margin = ({
+  top: 10,
+  right: 10,
+  bottom: 10,
+  left: 10
+})
+
+width = 900
+height = 700
+
+colorScale = d3.scaleOrdinal( d3.schemeSet2 )  // schemeSet2 has 8 colours
+
+
+
+/// tree map uses hierarchical structure: lots of nodes and children
+data = d3.json('https://amplify-wildrydes-dev-90718-deployment.s3.eu-west-2.amazonaws.com/data.json')
+
+data.then(function(data) {
+
+
+dataCopy = JSON.parse( JSON.stringify( data ) )
+
+hierarchy = d3.hierarchy( dataCopy )    // hierarchy obj structures differently, for hierarchical data
+    .sum(d => d.value)
+    .sort((a, b) => b.value - a.value)
+	
+treemap = d3.treemap()
+    .size([ width, height ])  // set the size of the treemap render area
+    .padding(2)       // padding between every rect
+    .paddingTop(10)  // padding at top of each group (to see country labels)
+    .round(true)    // round to nearest pixel (looks better)
+
+root = treemap( hierarchy )  // hierarchy obj is an input for treemap()
+
+
+
+// func to recalculate which rects have enough size to show text & scale text
+revealText = function(k) {
+  
+  const leaf = d3.select('.target').selectAll('g.leaf')
+
+  leaf.each((d, i, arr) => {
+
+    // The current leaf element
+    const current = arr[i]
+    
+      // k is scaling factor returned from real time zoom data
+      width = (d.x1 - d.x0) * k,    // calculate its width from the data
+      height = (d.y1 - d.y0) * k    // calculate its height from the data
+
+    // Check if it's too small for text
+    const tooSmall = width < 25 || height < 15
+
+    d3.select( current ).select('text')
+      .attr('opacity', tooSmall ? 0 : 0.9)
+      .style('font-size', 12 / k)    // scale text size for zoom
+      
+
+  })
+
+}
+
+
+
+
+const zoom = d3.zoom()     // func to enable zoom
+    .on('zoom', (event) => {
+      //g.attr('transform', event.transform);
+      //g.attr('transform', event.transform);
+      attr('transform', event.transform);
+      //console.log(event.transform.k)
+      revealText(k = event.transform.k)     // changes which text is revealed based on zoom level
+    })
+    .scaleExtent([0.5, 100]);   // magnification from 0.5x to 100x
+
+
+
+// root counts original data, plus calculations made for treemap px locations
+
+ const svg = d3.select('.target')
+      .style('font-family', 'sans-serif')
+      .attr('width', width)
+      .attr('height', height)
+      .call(zoom)       // call zoom on the svg obj itself to pan/zoom from anywhere on the panel (instead of just over shapes)
+
+
+
+g = svg.append('g')
+		.attr('class', 'treemap-container')
+
+
+
+g.selectAll('text.country')  // places text only
+    .data( root.children )      // binding 'children' keys from root obj (which is hierarchical)
+    .join('text')
+      .attr('class', 'country')
+      .attr('x', d => d.x0)     // in values for children->x0
+      .attr('y', d => d.y0)
+      .attr('dy', '0.6em')
+      .attr('dx', 3)
+      .style('font-size', 12)
+    .text(d => d.data.name)  // values from children->data->name
+
+
+const leaf = g.selectAll('g.leaf')   // preps leaves: not plotting them yet
+    .data(root.leaves())    // all leaf nodes
+    .join('g')
+      .attr('class', 'leaf')
+      .attr('transform', d => `translate(${ d.x0 },${ d.y0 })`)  // position each group at the top left corner of the rect
+      .style('font-size', 10)
+
+leaf.append('title')  // adds text to show on mouseover, though site is static in this case so you don't see it
+	.text(d => `${ d.parent.data.name }-${ d.data.name }\n${ d.value.toLocaleString() + ' GWh' }`)
+
+
+leaf.append('rect')   /// displays rectangles
+      .attr('fill', d => colorScale(d.parent.data.name))  
+      .attr('opacity', 0.7)
+      .attr('width', d => d.x1 - d.x0)     // x max - x min to get widtg
+      .attr('height', d => d.y1 - d.y0)
+      .attr('rx', 3)   // rounds corners
+      .attr('ry', 3)
+
+
+// adds labels where leaf rect is big enough
+leaf.each((d, i, arr) => {      // loop through leaves
+  
+    current = arr[i]   // current leaf element (think 'arr' is array of all inputs that are looped over)
+    width = d.x1 - d.x0
+    height = d.y1 - d.y0
+
+    text = d3.select( current ).append('text')
+        .attr('opacity', width < 34 || height < 25 ? 0 : 0.9)  // 0 opacity if leaf's rect is too small 
+      .selectAll('tspan')
+      .data(d => [ d.data.name,         // 2nd val in array goes on 2nd line; toLocaleString() converts to string
+      		       d.value.toLocaleString() 
+      		       ])   
+      .join('tspan')
+        .attr('x', 3)
+        .attr('y', (d,i) => i ? '2.5em' : '1.15em')
+        .text(d => d)
+
+  })
+
+
+
+})
+
+
+</script>
+</body>
+</html>

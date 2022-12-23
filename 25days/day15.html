@@ -1,0 +1,110 @@
+
+<!-- errors from line 64 -->
+
+<!DOCTYPE html>
+<html>
+<svg class="target" height="500" width="500" style="border:1px solid #ccc"/>
+
+<head>
+<script src="https://d3js.org/d3.v6.js"></script>  
+</head>
+<body>
+<script>
+
+
+margin = ({
+  top: 10,
+  right: 10,
+  bottom: 10,
+  left: 10
+})
+
+width = 500
+height = 500
+rectWidth = 30
+
+
+
+color = (d) => d3.interpolateViridis( Math.hypot(d.x, d.y) / Math.hypot(width/4, width/4) )  // set col from distance from origin
+
+
+
+
+
+
+const randomGenerator = d3.randomNormal( 0, width / 8 )   // func to generate numbers
+
+const data = d3.range(0,500).map(d => ({
+x: randomGenerator(),
+y: randomGenerator()
+}))
+
+const xScale = d3.scaleLinear([ -width/2, width/2 ], [ -width/2, width/2 ]),
+    yScale = d3.scaleLinear([ -height/2, height/2 ], [ -height/2, height/2 ])
+
+const svg = d3.select('.target')
+  .attr('width', width)
+  .attr('height', height)
+
+const container = svg.append('g')
+  .attr('class', 'container')
+  .attr('transform', `translate(${ width/2 },${ height/2 })`)    // centre 
+
+points = container.selectAll('circle.point')
+	.data( data )   // bind data
+	.join('circle')
+	  .attr('class', 'point')
+	  .attr('cx', d => xScale( d.x ))
+	  .attr('cy', d => yScale( d.y ))
+	  .attr('r', 8)
+	  .style('fill', color)
+	  .style('opacity', 0.8)
+
+
+brushStart = function({selection}) {   //// these two brush functions get errors
+	console.log(selection)
+      const sameX = selection[0][0] === selection [1][0],   // if things are same
+            sameY = selection[0][1] === selection [1][1]
+      
+      if(sameX && sameY) {
+        const points = points.selectAll('circle.point')
+        points.style('fill', color)
+      }
+  }
+
+brushing = function({selection}) {   // selection here is highlight box pos in pixels
+	const points = d3.select( points ).selectAll('circle.point')
+	return 1
+}
+
+brush = d3.brush()
+    .extent([ [ -width/2, -width/2 ], [ width/2, width/2] ])   // only allow brushing on inner square of canvas
+    .on('start', brushStart)   // on brush
+    .on('brush', brushing)		// during brushing
+
+
+
+
+
+const xAxis = d3.axisBottom( xScale )
+container.append('g').call( xAxis )
+
+const yAxis = d3.axisLeft( yScale )
+container.append('g').call( yAxis )
+
+container.selectAll('.tick text').remove()   // remove all text elements on the axes 
+
+container.call(brush)    // add brush functionality to plot (have to add brush to container, not 'points' obj)
+
+
+
+
+
+
+
+
+
+
+</script>
+</body>
+</html>

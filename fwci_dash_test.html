@@ -1,0 +1,487 @@
+
+<html>
+	<head>
+		<style>
+
+		</style>
+	</head>
+
+<body>
+
+<!--
+		<svg id = 'call' height = '99pc' width = '99pc', style="border:solid 1px black;">  
+			<g id = 'circle' style='transform: translate(0px, 0px);'></g> 
+		</svg>
+-->    <!-- to view output in svg -->
+
+</body>
+
+
+<script src="https://d3js.org/d3.v6.js"></script>  
+<script>
+
+
+
+main_data = {"Agriculture ":{"Bulgaria":{"fwci":[0.69],"gb":[0]},"Latvia":{"fwci":[0.73],"gb":[0]},"Japan":{"fwci":[0.84],"gb":[0]},"Slovakia":{"fwci":[0.93],"gb":[0]},"Poland":{"fwci":[1.06],"gb":[0]},"Romania":{"fwci":[1.07],"gb":[0]},"Croatia":{"fwci":[1.19],"gb":[0]},"Czech Republic":{"fwci":[1.26],"gb":[0]},"United States":{"fwci":[1.26],"gb":[0]},"Lithuania":{"fwci":[1.29],"gb":[0]},"Luxembourg":{"fwci":[1.33],"gb":[0]},"Hungary":{"fwci":[1.35],"gb":[0]},"Canada":{"fwci":[1.39],"gb":[0]},"Spain":{"fwci":[1.39],"gb":[0]},"Portugal":{"fwci":[1.43],"gb":[0]},"France":{"fwci":[1.47],"gb":[0]},"Germany":{"fwci":[1.49],"gb":[0]},"Sweden":{"fwci":[1.52],"gb":[0]},"Finland":{"fwci":[1.53],"gb":[0]},"Greece":{"fwci":[1.55],"gb":[0]},"Italy":{"fwci":[1.56],"gb":[0]},"United Kingdom":{"fwci":[1.56],"gb":[1]},"Belgium":{"fwci":[1.57],"gb":[0]},"Slovenia":{"fwci":[1.57],"gb":[0]},"Denmark":{"fwci":[1.61],"gb":[0]},"Malta":{"fwci":[1.64],"gb":[0]},"Netherlands":{"fwci":[1.67],"gb":[0]},"Cyprus":{"fwci":[1.72],"gb":[0]},"Austria":{"fwci":[1.74],"gb":[0]},"Ireland":{"fwci":[1.78],"gb":[0]},"Estonia":{"fwci":[1.81],"gb":[0]}},"Arts and Humanities":{"Bulgaria":{"fwci":[0.29],"gb":[0]},"Croatia":{"fwci":[0.44],"gb":[0]},"Lithuania":{"fwci":[0.67],"gb":[0]},"Slovenia":{"fwci":[0.71],"gb":[0]},"Poland":{"fwci":[0.79],"gb":[0]},"Czech Republic":{"fwci":[0.82],"gb":[0]},"Spain":{"fwci":[0.84],"gb":[0]},"Hungary":{"fwci":[0.89],"gb":[0]},"Portugal":{"fwci":[0.98],"gb":[0]},"Estonia":{"fwci":[1],"gb":[0]},"France":{"fwci":[1.05],"gb":[0]},"Italy":{"fwci":[1.05],"gb":[0]},"Latvia":{"fwci":[1.1],"gb":[0]},"Japan":{"fwci":[1.13],"gb":[0]},"Slovakia":{"fwci":[1.15],"gb":[0]},"Ireland":{"fwci":[1.17],"gb":[0]},"Romania":{"fwci":[1.18],"gb":[0]},"Greece":{"fwci":[1.28],"gb":[0]},"United States":{"fwci":[1.28],"gb":[0]},"Canada":{"fwci":[1.34],"gb":[0]},"Germany":{"fwci":[1.34],"gb":[0]},"Austria":{"fwci":[1.38],"gb":[0]},"United Kingdom":{"fwci":[1.49],"gb":[1]},"Finland":{"fwci":[1.54],"gb":[0]},"Belgium":{"fwci":[1.59],"gb":[0]},"Cyprus":{"fwci":[1.72],"gb":[0]},"Sweden":{"fwci":[1.73],"gb":[0]},"Netherlands":{"fwci":[1.74],"gb":[0]},"Malta":{"fwci":[1.81],"gb":[0]},"Denmark":{"fwci":[1.92],"gb":[0]},"Luxembourg":{"fwci":[1.96],"gb":[0]}},"Biochemsitry":{"Slovakia":{"fwci":[0.89],"gb":[0]},"Japan":{"fwci":[0.96],"gb":[0]},"Poland":{"fwci":[0.98],"gb":[0]},"Bulgaria":{"fwci":[1.02],"gb":[0]},"Croatia":{"fwci":[1.18],"gb":[0]},"Romania":{"fwci":[1.18],"gb":[0]},"Latvia":{"fwci":[1.21],"gb":[0]},"Lithuania":{"fwci":[1.24],"gb":[0]},"Portugal":{"fwci":[1.33],"gb":[0]},"Luxembourg":{"fwci":[1.36],"gb":[0]},"Hungary":{"fwci":[1.38],"gb":[0]},"United States":{"fwci":[1.41],"gb":[0]},"Malta":{"fwci":[1.42],"gb":[0]},"Czech Republic":{"fwci":[1.43],"gb":[0]},"Germany":{"fwci":[1.49],"gb":[0]},"Spain":{"fwci":[1.49],"gb":[0]},"France":{"fwci":[1.51],"gb":[0]},"Canada":{"fwci":[1.52],"gb":[0]},"Denmark":{"fwci":[1.55],"gb":[0]},"Ireland":{"fwci":[1.57],"gb":[0]},"Italy":{"fwci":[1.59],"gb":[0]},"Belgium":{"fwci":[1.61],"gb":[0]},"United Kingdom":{"fwci":[1.65],"gb":[1]},"Sweden":{"fwci":[1.67],"gb":[0]},"Greece":{"fwci":[1.68],"gb":[0]},"Netherlands":{"fwci":[1.74],"gb":[0]},"Finland":{"fwci":[1.88],"gb":[0]},"Cyprus":{"fwci":[1.98],"gb":[0]},"Austria":{"fwci":[2.13],"gb":[0]},"Slovenia":{"fwci":[2.4],"gb":[0]},"Estonia":{"fwci":[3.6],"gb":[0]}},"Business Management ":{"Bulgaria":{"fwci":[0.42],"gb":[0]},"Latvia":{"fwci":[0.76],"gb":[0]},"Slovenia":{"fwci":[0.8],"gb":[0]},"Japan":{"fwci":[0.81],"gb":[0]},"Poland":{"fwci":[0.85],"gb":[0]},"Lithuania":{"fwci":[0.86],"gb":[0]},"Czech Republic":{"fwci":[0.95],"gb":[0]},"Hungary":{"fwci":[1.08],"gb":[0]},"Croatia":{"fwci":[1.09],"gb":[0]},"Luxembourg":{"fwci":[1.12],"gb":[0]},"Portugal":{"fwci":[1.17],"gb":[0]},"Greece":{"fwci":[1.21],"gb":[0]},"Romania":{"fwci":[1.31],"gb":[0]},"United States":{"fwci":[1.35],"gb":[0]},"Germany":{"fwci":[1.39],"gb":[0]},"Spain":{"fwci":[1.39],"gb":[0]},"Canada":{"fwci":[1.4],"gb":[0]},"France":{"fwci":[1.44],"gb":[0]},"Slovakia":{"fwci":[1.48],"gb":[0]},"Austria":{"fwci":[1.51],"gb":[0]},"Belgium":{"fwci":[1.56],"gb":[0]},"Malta":{"fwci":[1.56],"gb":[0]},"Cyprus":{"fwci":[1.58],"gb":[0]},"Ireland":{"fwci":[1.61],"gb":[0]},"Estonia":{"fwci":[1.64],"gb":[0]},"Sweden":{"fwci":[1.67],"gb":[0]},"United Kingdom":{"fwci":[1.7],"gb":[1]},"Netherlands":{"fwci":[1.72],"gb":[0]},"Italy":{"fwci":[1.77],"gb":[0]},"Denmark":{"fwci":[1.81],"gb":[0]},"Finland":{"fwci":[1.87],"gb":[0]}},"Chemical Engineering":{"Latvia":{"fwci":[0.63],"gb":[0]},"Bulgaria":{"fwci":[0.76],"gb":[0]},"Hungary":{"fwci":[0.79],"gb":[0]},"Croatia":{"fwci":[0.8],"gb":[0]},"Slovakia":{"fwci":[0.87],"gb":[0]},"Czech Republic":{"fwci":[0.89],"gb":[0]},"Romania":{"fwci":[0.92],"gb":[0]},"Poland":{"fwci":[0.94],"gb":[0]},"Japan":{"fwci":[0.95],"gb":[0]},"France":{"fwci":[1.02],"gb":[0]},"Austria":{"fwci":[1.03],"gb":[0]},"Lithuania":{"fwci":[1.07],"gb":[0]},"Spain":{"fwci":[1.09],"gb":[0]},"Slovenia":{"fwci":[1.11],"gb":[0]},"Greece":{"fwci":[1.12],"gb":[0]},"Germany":{"fwci":[1.15],"gb":[0]},"Portugal":{"fwci":[1.19],"gb":[0]},"Finland":{"fwci":[1.2],"gb":[0]},"Sweden":{"fwci":[1.2],"gb":[0]},"Canada":{"fwci":[1.21],"gb":[0]},"Estonia":{"fwci":[1.24],"gb":[0]},"Italy":{"fwci":[1.24],"gb":[0]},"Ireland":{"fwci":[1.25],"gb":[0]},"Luxembourg":{"fwci":[1.26],"gb":[0]},"Netherlands":{"fwci":[1.3],"gb":[0]},"United Kingdom":{"fwci":[1.3],"gb":[1]},"Denmark":{"fwci":[1.33],"gb":[0]},"Belgium":{"fwci":[1.34],"gb":[0]},"United States":{"fwci":[1.36],"gb":[0]},"Malta":{"fwci":[1.67],"gb":[0]},"Cyprus":{"fwci":[1.97],"gb":[0]}},"Chemistry":{"Bulgaria":{"fwci":[0.65],"gb":[0]},"Romania":{"fwci":[0.77],"gb":[0]},"Japan":{"fwci":[0.9],"gb":[0]},"Croatia":{"fwci":[0.91],"gb":[0]},"Hungary":{"fwci":[0.91],"gb":[0]},"Slovakia":{"fwci":[0.92],"gb":[0]},"Poland":{"fwci":[0.96],"gb":[0]},"Czech Republic":{"fwci":[1],"gb":[0]},"Slovenia":{"fwci":[1.07],"gb":[0]},"France":{"fwci":[1.13],"gb":[0]},"Latvia":{"fwci":[1.13],"gb":[0]},"Lithuania":{"fwci":[1.14],"gb":[0]},"Portugal":{"fwci":[1.16],"gb":[0]},"Spain":{"fwci":[1.16],"gb":[0]},"Austria":{"fwci":[1.17],"gb":[0]},"Germany":{"fwci":[1.19],"gb":[0]},"Finland":{"fwci":[1.22],"gb":[0]},"Ireland":{"fwci":[1.22],"gb":[0]},"Cyprus":{"fwci":[1.23],"gb":[0]},"Italy":{"fwci":[1.24],"gb":[0]},"Greece":{"fwci":[1.25],"gb":[0]},"Canada":{"fwci":[1.29],"gb":[0]},"Sweden":{"fwci":[1.32],"gb":[0]},"Belgium":{"fwci":[1.33],"gb":[0]},"Estonia":{"fwci":[1.33],"gb":[0]},"United Kingdom":{"fwci":[1.36],"gb":[1]},"United States":{"fwci":[1.36],"gb":[0]},"Netherlands":{"fwci":[1.4],"gb":[0]},"Denmark":{"fwci":[1.51],"gb":[0]},"Luxembourg":{"fwci":[1.59],"gb":[0]},"Malta":{"fwci":[2.2],"gb":[0]}},"Computer Science":{"Bulgaria":{"fwci":[0.6],"gb":[0]},"Croatia":{"fwci":[0.71],"gb":[0]},"Latvia":{"fwci":[0.77],"gb":[0]},"Romania":{"fwci":[0.83],"gb":[0]},"Japan":{"fwci":[0.91],"gb":[0]},"Slovakia":{"fwci":[0.96],"gb":[0]},"Czech Republic":{"fwci":[1.06],"gb":[0]},"Poland":{"fwci":[1.06],"gb":[0]},"Malta":{"fwci":[1.07],"gb":[0]},"Portugal":{"fwci":[1.09],"gb":[0]},"Lithuania":{"fwci":[1.11],"gb":[0]},"France":{"fwci":[1.12],"gb":[0]},"Hungary":{"fwci":[1.15],"gb":[0]},"Austria":{"fwci":[1.17],"gb":[0]},"Estonia":{"fwci":[1.18],"gb":[0]},"Slovenia":{"fwci":[1.19],"gb":[0]},"Spain":{"fwci":[1.21],"gb":[0]},"Greece":{"fwci":[1.23],"gb":[0]},"Germany":{"fwci":[1.27],"gb":[0]},"Canada":{"fwci":[1.3],"gb":[0]},"Cyprus":{"fwci":[1.33],"gb":[0]},"Netherlands":{"fwci":[1.33],"gb":[0]},"Belgium":{"fwci":[1.38],"gb":[0]},"Italy":{"fwci":[1.42],"gb":[0]},"Luxembourg":{"fwci":[1.43],"gb":[0]},"Sweden":{"fwci":[1.44],"gb":[0]},"United States":{"fwci":[1.49],"gb":[0]},"United Kingdom":{"fwci":[1.52],"gb":[1]},"Denmark":{"fwci":[1.57],"gb":[0]},"Ireland":{"fwci":[1.6],"gb":[0]},"Finland":{"fwci":[1.61],"gb":[0]}},"Decision Sciences":{"Bulgaria":{"fwci":[0.54],"gb":[0]},"Malta":{"fwci":[0.55],"gb":[0]},"Romania":{"fwci":[0.66],"gb":[0]},"Japan":{"fwci":[0.78],"gb":[0]},"Latvia":{"fwci":[0.84],"gb":[0]},"Croatia":{"fwci":[0.92],"gb":[0]},"Poland":{"fwci":[0.97],"gb":[0]},"Czech Republic":{"fwci":[1.12],"gb":[0]},"Portugal":{"fwci":[1.12],"gb":[0]},"Slovakia":{"fwci":[1.14],"gb":[0]},"Canada":{"fwci":[1.17],"gb":[0]},"Lithuania":{"fwci":[1.17],"gb":[0]},"United States":{"fwci":[1.18],"gb":[0]},"France":{"fwci":[1.21],"gb":[0]},"Belgium":{"fwci":[1.25],"gb":[0]},"Greece":{"fwci":[1.27],"gb":[0]},"Germany":{"fwci":[1.32],"gb":[0]},"Cyprus":{"fwci":[1.38],"gb":[0]},"Sweden":{"fwci":[1.38],"gb":[0]},"Italy":{"fwci":[1.39],"gb":[0]},"Spain":{"fwci":[1.39],"gb":[0]},"Austria":{"fwci":[1.41],"gb":[0]},"United Kingdom":{"fwci":[1.43],"gb":[1]},"Netherlands":{"fwci":[1.49],"gb":[0]},"Denmark":{"fwci":[1.5],"gb":[0]},"Hungary":{"fwci":[1.54],"gb":[0]},"Luxembourg":{"fwci":[1.71],"gb":[0]},"Slovenia":{"fwci":[1.72],"gb":[0]},"Estonia":{"fwci":[1.8],"gb":[0]},"Finland":{"fwci":[1.84],"gb":[0]},"Ireland":{"fwci":[2.07],"gb":[0]}},"Dentistry":{"Luxembourg":{"fwci":[0.45],"gb":[0]},"Malta":{"fwci":[0.64],"gb":[0]},"Poland":{"fwci":[0.68],"gb":[0]},"Japan":{"fwci":[0.83],"gb":[0]},"Croatia":{"fwci":[0.87],"gb":[0]},"Finland":{"fwci":[0.97],"gb":[0]},"Bulgaria":{"fwci":[0.99],"gb":[0]},"Cyprus":{"fwci":[1.02],"gb":[0]},"Czech Republic":{"fwci":[1.08],"gb":[0]},"United Kingdom":{"fwci":[1.09],"gb":[1]},"Portugal":{"fwci":[1.11],"gb":[0]},"United States":{"fwci":[1.23],"gb":[0]},"Romania":{"fwci":[1.31],"gb":[0]},"Greece":{"fwci":[1.41],"gb":[0]},"Austria":{"fwci":[1.45],"gb":[0]},"Lithuania":{"fwci":[1.45],"gb":[0]},"France":{"fwci":[1.46],"gb":[0]},"Germany":{"fwci":[1.46],"gb":[0]},"Denmark":{"fwci":[1.49],"gb":[0]},"Slovenia":{"fwci":[1.49],"gb":[0]},"Sweden":{"fwci":[1.5],"gb":[0]},"Estonia":{"fwci":[1.65],"gb":[0]},"Canada":{"fwci":[1.69],"gb":[0]},"Spain":{"fwci":[1.72],"gb":[0]},"Belgium":{"fwci":[1.74],"gb":[0]},"Slovakia":{"fwci":[1.75],"gb":[0]},"Italy":{"fwci":[1.86],"gb":[0]},"Netherlands":{"fwci":[1.92],"gb":[0]},"Ireland":{"fwci":[2.09],"gb":[0]},"Hungary":{"fwci":[3.19],"gb":[0]},"Latvia":{"fwci":[10.35],"gb":[0]}},"Earth and Planetary Sciences":{"Slovakia":{"fwci":[0.73],"gb":[0]},"Bulgaria":{"fwci":[0.79],"gb":[0]},"Romania":{"fwci":[0.79],"gb":[0]},"Luxembourg":{"fwci":[1],"gb":[0]},"Croatia":{"fwci":[1.06],"gb":[0]},"Latvia":{"fwci":[1.1],"gb":[0]},"Slovenia":{"fwci":[1.1],"gb":[0]},"Poland":{"fwci":[1.17],"gb":[0]},"Czech Republic":{"fwci":[1.21],"gb":[0]},"Japan":{"fwci":[1.31],"gb":[0]},"United States":{"fwci":[1.33],"gb":[0]},"Estonia":{"fwci":[1.41],"gb":[0]},"Spain":{"fwci":[1.41],"gb":[0]},"France":{"fwci":[1.44],"gb":[0]},"Lithuania":{"fwci":[1.44],"gb":[0]},"Germany":{"fwci":[1.45],"gb":[0]},"Portugal":{"fwci":[1.46],"gb":[0]},"Canada":{"fwci":[1.49],"gb":[0]},"Cyprus":{"fwci":[1.49],"gb":[0]},"Greece":{"fwci":[1.49],"gb":[0]},"Hungary":{"fwci":[1.51],"gb":[0]},"Ireland":{"fwci":[1.52],"gb":[0]},"Italy":{"fwci":[1.52],"gb":[0]},"United Kingdom":{"fwci":[1.56],"gb":[1]},"Malta":{"fwci":[1.63],"gb":[0]},"Finland":{"fwci":[1.68],"gb":[0]},"Austria":{"fwci":[1.74],"gb":[0]},"Sweden":{"fwci":[1.76],"gb":[0]},"Belgium":{"fwci":[1.78],"gb":[0]},"Netherlands":{"fwci":[1.87],"gb":[0]},"Denmark":{"fwci":[1.99],"gb":[0]}},"Economics and Finance":{"Hungary":{"fwci":[0.67],"gb":[0]},"Croatia":{"fwci":[0.68],"gb":[0]},"Luxembourg":{"fwci":[0.68],"gb":[0]},"Japan":{"fwci":[0.8],"gb":[0]},"Bulgaria":{"fwci":[0.85],"gb":[0]},"Lithuania":{"fwci":[0.88],"gb":[0]},"Poland":{"fwci":[0.94],"gb":[0]},"Czech Republic":{"fwci":[0.96],"gb":[0]},"Slovenia":{"fwci":[0.97],"gb":[0]},"Greece":{"fwci":[1.06],"gb":[0]},"Spain":{"fwci":[1.06],"gb":[0]},"Portugal":{"fwci":[1.09],"gb":[0]},"Latvia":{"fwci":[1.12],"gb":[0]},"Cyprus":{"fwci":[1.14],"gb":[0]},"United States":{"fwci":[1.16],"gb":[0]},"Germany":{"fwci":[1.19],"gb":[0]},"France":{"fwci":[1.21],"gb":[0]},"Belgium":{"fwci":[1.26],"gb":[0]},"Italy":{"fwci":[1.27],"gb":[0]},"Romania":{"fwci":[1.28],"gb":[0]},"Austria":{"fwci":[1.35],"gb":[0]},"Sweden":{"fwci":[1.35],"gb":[0]},"Canada":{"fwci":[1.38],"gb":[0]},"Denmark":{"fwci":[1.44],"gb":[0]},"Netherlands":{"fwci":[1.44],"gb":[0]},"United Kingdom":{"fwci":[1.51],"gb":[1]},"Malta":{"fwci":[1.52],"gb":[0]},"Slovakia":{"fwci":[1.58],"gb":[0]},"Ireland":{"fwci":[1.69],"gb":[0]},"Estonia":{"fwci":[1.71],"gb":[0]},"Finland":{"fwci":[2.05],"gb":[0]}},"Energy":{"Bulgaria":{"fwci":[0.53],"gb":[0]},"Latvia":{"fwci":[0.62],"gb":[0]},"Japan":{"fwci":[0.94],"gb":[0]},"Slovenia":{"fwci":[0.99],"gb":[0]},"Romania":{"fwci":[1],"gb":[0]},"Slovakia":{"fwci":[1],"gb":[0]},"Hungary":{"fwci":[1.03],"gb":[0]},"Czech Republic":{"fwci":[1.12],"gb":[0]},"France":{"fwci":[1.12],"gb":[0]},"Croatia":{"fwci":[1.15],"gb":[0]},"Luxembourg":{"fwci":[1.15],"gb":[0]},"Poland":{"fwci":[1.15],"gb":[0]},"Spain":{"fwci":[1.17],"gb":[0]},"Austria":{"fwci":[1.18],"gb":[0]},"Cyprus":{"fwci":[1.23],"gb":[0]},"Germany":{"fwci":[1.27],"gb":[0]},"Belgium":{"fwci":[1.33],"gb":[0]},"Ireland":{"fwci":[1.33],"gb":[0]},"Lithuania":{"fwci":[1.33],"gb":[0]},"Portugal":{"fwci":[1.37],"gb":[0]},"Greece":{"fwci":[1.39],"gb":[0]},"Sweden":{"fwci":[1.39],"gb":[0]},"Italy":{"fwci":[1.4],"gb":[0]},"Estonia":{"fwci":[1.42],"gb":[0]},"Malta":{"fwci":[1.44],"gb":[0]},"United States":{"fwci":[1.44],"gb":[0]},"United Kingdom":{"fwci":[1.45],"gb":[1]},"Finland":{"fwci":[1.47],"gb":[0]},"Canada":{"fwci":[1.48],"gb":[0]},"Netherlands":{"fwci":[1.49],"gb":[0]},"Denmark":{"fwci":[1.64],"gb":[0]}},"Engineering":{"Bulgaria":{"fwci":[0.55],"gb":[0]},"Croatia":{"fwci":[0.81],"gb":[0]},"Romania":{"fwci":[0.81],"gb":[0]},"Latvia":{"fwci":[0.84],"gb":[0]},"Slovakia":{"fwci":[0.85],"gb":[0]},"Japan":{"fwci":[0.89],"gb":[0]},"Czech Republic":{"fwci":[0.95],"gb":[0]},"Poland":{"fwci":[0.99],"gb":[0]},"Hungary":{"fwci":[1.06],"gb":[0]},"Malta":{"fwci":[1.07],"gb":[0]},"France":{"fwci":[1.12],"gb":[0]},"Slovenia":{"fwci":[1.16],"gb":[0]},"Germany":{"fwci":[1.18],"gb":[0]},"Lithuania":{"fwci":[1.21],"gb":[0]},"Spain":{"fwci":[1.24],"gb":[0]},"Canada":{"fwci":[1.26],"gb":[0]},"Austria":{"fwci":[1.27],"gb":[0]},"Greece":{"fwci":[1.33],"gb":[0]},"United States":{"fwci":[1.34],"gb":[0]},"Portugal":{"fwci":[1.36],"gb":[0]},"Belgium":{"fwci":[1.39],"gb":[0]},"Netherlands":{"fwci":[1.41],"gb":[0]},"United Kingdom":{"fwci":[1.45],"gb":[1]},"Estonia":{"fwci":[1.49],"gb":[0]},"Sweden":{"fwci":[1.49],"gb":[0]},"Italy":{"fwci":[1.51],"gb":[0]},"Ireland":{"fwci":[1.52],"gb":[0]},"Cyprus":{"fwci":[1.54],"gb":[0]},"Finland":{"fwci":[1.55],"gb":[0]},"Luxembourg":{"fwci":[1.67],"gb":[0]},"Denmark":{"fwci":[1.71],"gb":[0]}},"Enivronmental Science":{"Bulgaria":{"fwci":[0.84],"gb":[0]},"Poland":{"fwci":[1.02],"gb":[0]},"Japan":{"fwci":[1.04],"gb":[0]},"Latvia":{"fwci":[1.07],"gb":[0]},"Slovakia":{"fwci":[1.07],"gb":[0]},"Romania":{"fwci":[1.13],"gb":[0]},"Croatia":{"fwci":[1.15],"gb":[0]},"Luxembourg":{"fwci":[1.16],"gb":[0]},"Czech Republic":{"fwci":[1.17],"gb":[0]},"Portugal":{"fwci":[1.28],"gb":[0]},"Spain":{"fwci":[1.32],"gb":[0]},"United States":{"fwci":[1.33],"gb":[0]},"France":{"fwci":[1.37],"gb":[0]},"Lithuania":{"fwci":[1.4],"gb":[0]},"Canada":{"fwci":[1.43],"gb":[0]},"Germany":{"fwci":[1.45],"gb":[0]},"Ireland":{"fwci":[1.45],"gb":[0]},"Hungary":{"fwci":[1.46],"gb":[0]},"Slovenia":{"fwci":[1.47],"gb":[0]},"Greece":{"fwci":[1.57],"gb":[0]},"Belgium":{"fwci":[1.6],"gb":[0]},"Italy":{"fwci":[1.64],"gb":[0]},"Sweden":{"fwci":[1.65],"gb":[0]},"United Kingdom":{"fwci":[1.65],"gb":[1]},"Finland":{"fwci":[1.68],"gb":[0]},"Austria":{"fwci":[1.72],"gb":[0]},"Netherlands":{"fwci":[1.73],"gb":[0]},"Denmark":{"fwci":[1.76],"gb":[0]},"Cyprus":{"fwci":[1.87],"gb":[0]},"Estonia":{"fwci":[1.88],"gb":[0]},"Malta":{"fwci":[1.89],"gb":[0]}},"Health Professions":{"Bulgaria":{"fwci":[0.52],"gb":[0]},"Slovakia":{"fwci":[0.53],"gb":[0]},"Japan":{"fwci":[0.74],"gb":[0]},"Czech Republic":{"fwci":[0.77],"gb":[0]},"Poland":{"fwci":[0.95],"gb":[0]},"Luxembourg":{"fwci":[1.03],"gb":[0]},"Romania":{"fwci":[1.06],"gb":[0]},"Cyprus":{"fwci":[1.25],"gb":[0]},"Germany":{"fwci":[1.27],"gb":[0]},"France":{"fwci":[1.28],"gb":[0]},"United States":{"fwci":[1.29],"gb":[0]},"Slovenia":{"fwci":[1.3],"gb":[0]},"Lithuania":{"fwci":[1.33],"gb":[0]},"Greece":{"fwci":[1.34],"gb":[0]},"Spain":{"fwci":[1.35],"gb":[0]},"Canada":{"fwci":[1.39],"gb":[0]},"Portugal":{"fwci":[1.39],"gb":[0]},"Latvia":{"fwci":[1.4],"gb":[0]},"Austria":{"fwci":[1.47],"gb":[0]},"Croatia":{"fwci":[1.49],"gb":[0]},"Finland":{"fwci":[1.52],"gb":[0]},"Hungary":{"fwci":[1.56],"gb":[0]},"Malta":{"fwci":[1.59],"gb":[0]},"United Kingdom":{"fwci":[1.62],"gb":[1]},"Netherlands":{"fwci":[1.65],"gb":[0]},"Sweden":{"fwci":[1.65],"gb":[0]},"Ireland":{"fwci":[1.72],"gb":[0]},"Italy":{"fwci":[1.99],"gb":[0]},"Belgium":{"fwci":[2],"gb":[0]},"Denmark":{"fwci":[2.24],"gb":[0]},"Estonia":{"fwci":[2.64],"gb":[0]}},"Immunology and Microbiology":{"Bulgaria":{"fwci":[0.77],"gb":[0]},"Slovakia":{"fwci":[0.87],"gb":[0]},"Slovenia":{"fwci":[0.98],"gb":[0]},"Japan":{"fwci":[1],"gb":[0]},"Poland":{"fwci":[1.03],"gb":[0]},"Czech Republic":{"fwci":[1.1],"gb":[0]},"Luxembourg":{"fwci":[1.13],"gb":[0]},"Finland":{"fwci":[1.22],"gb":[0]},"Croatia":{"fwci":[1.24],"gb":[0]},"Latvia":{"fwci":[1.35],"gb":[0]},"Sweden":{"fwci":[1.39],"gb":[0]},"Hungary":{"fwci":[1.4],"gb":[0]},"Spain":{"fwci":[1.4],"gb":[0]},"Portugal":{"fwci":[1.44],"gb":[0]},"United States":{"fwci":[1.45],"gb":[0]},"Estonia":{"fwci":[1.5],"gb":[0]},"United Kingdom":{"fwci":[1.54],"gb":[1]},"Canada":{"fwci":[1.56],"gb":[0]},"Denmark":{"fwci":[1.56],"gb":[0]},"France":{"fwci":[1.58],"gb":[0]},"Austria":{"fwci":[1.67],"gb":[0]},"Italy":{"fwci":[1.72],"gb":[0]},"Germany":{"fwci":[1.74],"gb":[0]},"Lithuania":{"fwci":[1.89],"gb":[0]},"Netherlands":{"fwci":[2.01],"gb":[0]},"Belgium":{"fwci":[2.04],"gb":[0]},"Ireland":{"fwci":[2.14],"gb":[0]},"Romania":{"fwci":[2.17],"gb":[0]},"Cyprus":{"fwci":[2.34],"gb":[0]},"Malta":{"fwci":[2.68],"gb":[0]},"Greece":{"fwci":[2.79],"gb":[0]}},"Materials Science":{"Romania":{"fwci":[0.61],"gb":[0]},"Croatia":{"fwci":[0.72],"gb":[0]},"Bulgaria":{"fwci":[0.74],"gb":[0]},"Slovakia":{"fwci":[0.77],"gb":[0]},"Hungary":{"fwci":[0.85],"gb":[0]},"Poland":{"fwci":[0.89],"gb":[0]},"Czech Republic":{"fwci":[0.92],"gb":[0]},"Japan":{"fwci":[0.94],"gb":[0]},"Lithuania":{"fwci":[0.99],"gb":[0]},"Austria":{"fwci":[1.04],"gb":[0]},"France":{"fwci":[1.05],"gb":[0]},"Slovenia":{"fwci":[1.05],"gb":[0]},"Cyprus":{"fwci":[1.11],"gb":[0]},"Latvia":{"fwci":[1.12],"gb":[0]},"Germany":{"fwci":[1.14],"gb":[0]},"Spain":{"fwci":[1.17],"gb":[0]},"Estonia":{"fwci":[1.21],"gb":[0]},"Finland":{"fwci":[1.21],"gb":[0]},"Greece":{"fwci":[1.23],"gb":[0]},"Portugal":{"fwci":[1.23],"gb":[0]},"Canada":{"fwci":[1.3],"gb":[0]},"Italy":{"fwci":[1.32],"gb":[0]},"Luxembourg":{"fwci":[1.33],"gb":[0]},"Ireland":{"fwci":[1.34],"gb":[0]},"United Kingdom":{"fwci":[1.37],"gb":[1]},"United States":{"fwci":[1.38],"gb":[0]},"Belgium":{"fwci":[1.39],"gb":[0]},"Sweden":{"fwci":[1.4],"gb":[0]},"Netherlands":{"fwci":[1.47],"gb":[0]},"Denmark":{"fwci":[1.59],"gb":[0]},"Malta":{"fwci":[1.73],"gb":[0]}},"Mathematics":{"Croatia":{"fwci":[0.68],"gb":[0]},"Bulgaria":{"fwci":[0.69],"gb":[0]},"Malta":{"fwci":[0.72],"gb":[0]},"Japan":{"fwci":[0.83],"gb":[0]},"Poland":{"fwci":[0.92],"gb":[0]},"France":{"fwci":[0.95],"gb":[0]},"Czech Republic":{"fwci":[0.98],"gb":[0]},"Hungary":{"fwci":[1.04],"gb":[0]},"Latvia":{"fwci":[1.05],"gb":[0]},"United States":{"fwci":[1.07],"gb":[0]},"Germany":{"fwci":[1.09],"gb":[0]},"Portugal":{"fwci":[1.09],"gb":[0]},"Slovakia":{"fwci":[1.09],"gb":[0]},"Greece":{"fwci":[1.1],"gb":[0]},"Austria":{"fwci":[1.12],"gb":[0]},"Spain":{"fwci":[1.12],"gb":[0]},"Canada":{"fwci":[1.13],"gb":[0]},"Cyprus":{"fwci":[1.18],"gb":[0]},"Sweden":{"fwci":[1.18],"gb":[0]},"Lithuania":{"fwci":[1.19],"gb":[0]},"Belgium":{"fwci":[1.2],"gb":[0]},"Netherlands":{"fwci":[1.2],"gb":[0]},"Luxembourg":{"fwci":[1.21],"gb":[0]},"Ireland":{"fwci":[1.24],"gb":[0]},"Estonia":{"fwci":[1.25],"gb":[0]},"United Kingdom":{"fwci":[1.25],"gb":[1]},"Slovenia":{"fwci":[1.29],"gb":[0]},"Finland":{"fwci":[1.36],"gb":[0]},"Italy":{"fwci":[1.37],"gb":[0]},"Denmark":{"fwci":[1.38],"gb":[0]},"Romania":{"fwci":[1.64],"gb":[0]}},"Medicine":{"Japan":{"fwci":[0.87],"gb":[0]},"Poland":{"fwci":[1.1],"gb":[0]},"Czech Republic":{"fwci":[1.25],"gb":[0]},"Slovakia":{"fwci":[1.31],"gb":[0]},"United States":{"fwci":[1.33],"gb":[0]},"Germany":{"fwci":[1.35],"gb":[0]},"Romania":{"fwci":[1.39],"gb":[0]},"Croatia":{"fwci":[1.43],"gb":[0]},"Portugal":{"fwci":[1.44],"gb":[0]},"Spain":{"fwci":[1.45],"gb":[0]},"Bulgaria":{"fwci":[1.51],"gb":[0]},"Canada":{"fwci":[1.52],"gb":[0]},"France":{"fwci":[1.6],"gb":[0]},"Sweden":{"fwci":[1.6],"gb":[0]},"Hungary":{"fwci":[1.62],"gb":[0]},"Finland":{"fwci":[1.66],"gb":[0]},"Greece":{"fwci":[1.67],"gb":[0]},"Ireland":{"fwci":[1.69],"gb":[0]},"Austria":{"fwci":[1.7],"gb":[0]},"Netherlands":{"fwci":[1.7],"gb":[0]},"United Kingdom":{"fwci":[1.7],"gb":[1]},"Denmark":{"fwci":[1.73],"gb":[0]},"Slovenia":{"fwci":[1.84],"gb":[0]},"Italy":{"fwci":[1.87],"gb":[0]},"Belgium":{"fwci":[1.93],"gb":[0]},"Cyprus":{"fwci":[1.97],"gb":[0]},"Lithuania":{"fwci":[2.07],"gb":[0]},"Luxembourg":{"fwci":[2.28],"gb":[0]},"Malta":{"fwci":[2.5],"gb":[0]},"Latvia":{"fwci":[2.51],"gb":[0]},"Estonia":{"fwci":[2.81],"gb":[0]}},"Multidisciplinary":{"Bulgaria":{"fwci":[0.5],"gb":[0]},"Malta":{"fwci":[0.91],"gb":[0]},"Japan":{"fwci":[0.93],"gb":[0]},"Slovakia":{"fwci":[1.02],"gb":[0]},"Lithuania":{"fwci":[1.05],"gb":[0]},"Czech Republic":{"fwci":[1.09],"gb":[0]},"Poland":{"fwci":[1.11],"gb":[0]},"Spain":{"fwci":[1.18],"gb":[0]},"Romania":{"fwci":[1.24],"gb":[0]},"Austria":{"fwci":[1.28],"gb":[0]},"Portugal":{"fwci":[1.3],"gb":[0]},"Hungary":{"fwci":[1.38],"gb":[0]},"Sweden":{"fwci":[1.43],"gb":[0]},"France":{"fwci":[1.45],"gb":[0]},"Germany":{"fwci":[1.46],"gb":[0]},"Latvia":{"fwci":[1.49],"gb":[0]},"Croatia":{"fwci":[1.53],"gb":[0]},"Luxembourg":{"fwci":[1.53],"gb":[0]},"United States":{"fwci":[1.54],"gb":[0]},"Canada":{"fwci":[1.55],"gb":[0]},"Denmark":{"fwci":[1.55],"gb":[0]},"Ireland":{"fwci":[1.6],"gb":[0]},"Italy":{"fwci":[1.62],"gb":[0]},"Slovenia":{"fwci":[1.66],"gb":[0]},"Belgium":{"fwci":[1.69],"gb":[0]},"United Kingdom":{"fwci":[1.74],"gb":[1]},"Netherlands":{"fwci":[1.8],"gb":[0]},"Greece":{"fwci":[1.94],"gb":[0]},"Finland":{"fwci":[2.25],"gb":[0]},"Cyprus":{"fwci":[3.66],"gb":[0]},"Estonia":{"fwci":[6.29],"gb":[0]}},"Neuroscience":{"Lithuania":{"fwci":[0.72],"gb":[0]},"Slovakia":{"fwci":[0.82],"gb":[0]},"Romania":{"fwci":[0.85],"gb":[0]},"Cyprus":{"fwci":[0.99],"gb":[0]},"Japan":{"fwci":[0.99],"gb":[0]},"Hungary":{"fwci":[1.13],"gb":[0]},"Bulgaria":{"fwci":[1.2],"gb":[0]},"Latvia":{"fwci":[1.23],"gb":[0]},"Poland":{"fwci":[1.27],"gb":[0]},"Portugal":{"fwci":[1.27],"gb":[0]},"United States":{"fwci":[1.27],"gb":[0]},"Canada":{"fwci":[1.33],"gb":[0]},"Germany":{"fwci":[1.34],"gb":[0]},"France":{"fwci":[1.41],"gb":[0]},"Luxembourg":{"fwci":[1.42],"gb":[0]},"Croatia":{"fwci":[1.43],"gb":[0]},"Denmark":{"fwci":[1.47],"gb":[0]},"Malta":{"fwci":[1.47],"gb":[0]},"Sweden":{"fwci":[1.48],"gb":[0]},"Czech Republic":{"fwci":[1.49],"gb":[0]},"Greece":{"fwci":[1.5],"gb":[0]},"Spain":{"fwci":[1.52],"gb":[0]},"Finland":{"fwci":[1.56],"gb":[0]},"Italy":{"fwci":[1.59],"gb":[0]},"United Kingdom":{"fwci":[1.61],"gb":[1]},"Netherlands":{"fwci":[1.73],"gb":[0]},"Ireland":{"fwci":[1.75],"gb":[0]},"Slovenia":{"fwci":[1.78],"gb":[0]},"Belgium":{"fwci":[1.8],"gb":[0]},"Austria":{"fwci":[1.83],"gb":[0]},"Estonia":{"fwci":[2.26],"gb":[0]}},"Nursing":{"Latvia":{"fwci":[0.95],"gb":[0]},"Slovakia":{"fwci":[1.01],"gb":[0]},"France":{"fwci":[1.02],"gb":[0]},"Japan":{"fwci":[1.04],"gb":[0]},"United States":{"fwci":[1.14],"gb":[0]},"Czech Republic":{"fwci":[1.18],"gb":[0]},"Bulgaria":{"fwci":[1.19],"gb":[0]},"Malta":{"fwci":[1.21],"gb":[0]},"Spain":{"fwci":[1.21],"gb":[0]},"Portugal":{"fwci":[1.23],"gb":[0]},"Germany":{"fwci":[1.24],"gb":[0]},"Canada":{"fwci":[1.28],"gb":[0]},"United Kingdom":{"fwci":[1.36],"gb":[1]},"Sweden":{"fwci":[1.4],"gb":[0]},"Netherlands":{"fwci":[1.44],"gb":[0]},"Ireland":{"fwci":[1.45],"gb":[0]},"Poland":{"fwci":[1.47],"gb":[0]},"Greece":{"fwci":[1.55],"gb":[0]},"Finland":{"fwci":[1.62],"gb":[0]},"Estonia":{"fwci":[1.63],"gb":[0]},"Cyprus":{"fwci":[1.67],"gb":[0]},"Denmark":{"fwci":[1.7],"gb":[0]},"Austria":{"fwci":[1.72],"gb":[0]},"Lithuania":{"fwci":[1.8],"gb":[0]},"Belgium":{"fwci":[1.94],"gb":[0]},"Romania":{"fwci":[2.01],"gb":[0]},"Italy":{"fwci":[2.12],"gb":[0]},"Croatia":{"fwci":[2.33],"gb":[0]},"Hungary":{"fwci":[2.62],"gb":[0]},"Slovenia":{"fwci":[3.48],"gb":[0]},"Luxembourg":{"fwci":[4],"gb":[0]}},"Pharmacology":{"Lithuania":{"fwci":[0.67],"gb":[0]},"Japan":{"fwci":[0.69],"gb":[0]},"Croatia":{"fwci":[0.77],"gb":[0]},"Malta":{"fwci":[0.95],"gb":[0]},"Bulgaria":{"fwci":[0.96],"gb":[0]},"Cyprus":{"fwci":[0.97],"gb":[0]},"Poland":{"fwci":[0.98],"gb":[0]},"Slovakia":{"fwci":[1],"gb":[0]},"Hungary":{"fwci":[1.01],"gb":[0]},"Sweden":{"fwci":[1.08],"gb":[0]},"Czech Republic":{"fwci":[1.12],"gb":[0]},"Austria":{"fwci":[1.13],"gb":[0]},"Slovenia":{"fwci":[1.15],"gb":[0]},"Romania":{"fwci":[1.16],"gb":[0]},"Latvia":{"fwci":[1.18],"gb":[0]},"France":{"fwci":[1.2],"gb":[0]},"United States":{"fwci":[1.22],"gb":[0]},"Spain":{"fwci":[1.23],"gb":[0]},"Germany":{"fwci":[1.24],"gb":[0]},"Greece":{"fwci":[1.27],"gb":[0]},"Canada":{"fwci":[1.35],"gb":[0]},"Portugal":{"fwci":[1.35],"gb":[0]},"United Kingdom":{"fwci":[1.4],"gb":[1]},"Denmark":{"fwci":[1.42],"gb":[0]},"Netherlands":{"fwci":[1.42],"gb":[0]},"Finland":{"fwci":[1.43],"gb":[0]},"Italy":{"fwci":[1.46],"gb":[0]},"Belgium":{"fwci":[1.48],"gb":[0]},"Luxembourg":{"fwci":[1.63],"gb":[0]},"Estonia":{"fwci":[1.64],"gb":[0]},"Ireland":{"fwci":[1.75],"gb":[0]}},"Physics and Astronomy":{"Japan":{"fwci":[1.03],"gb":[0]},"Slovakia":{"fwci":[1.13],"gb":[0]},"Bulgaria":{"fwci":[1.15],"gb":[0]},"Czech Republic":{"fwci":[1.2],"gb":[0]},"Poland":{"fwci":[1.2],"gb":[0]},"Croatia":{"fwci":[1.24],"gb":[0]},"Romania":{"fwci":[1.25],"gb":[0]},"France":{"fwci":[1.26],"gb":[0]},"Lithuania":{"fwci":[1.31],"gb":[0]},"Germany":{"fwci":[1.36],"gb":[0]},"Latvia":{"fwci":[1.36],"gb":[0]},"United States":{"fwci":[1.41],"gb":[0]},"Spain":{"fwci":[1.42],"gb":[0]},"Malta":{"fwci":[1.44],"gb":[0]},"Canada":{"fwci":[1.46],"gb":[0]},"Italy":{"fwci":[1.46],"gb":[0]},"United Kingdom":{"fwci":[1.47],"gb":[1]},"Austria":{"fwci":[1.52],"gb":[0]},"Greece":{"fwci":[1.52],"gb":[0]},"Luxembourg":{"fwci":[1.52],"gb":[0]},"Hungary":{"fwci":[1.57],"gb":[0]},"Portugal":{"fwci":[1.58],"gb":[0]},"Ireland":{"fwci":[1.59],"gb":[0]},"Sweden":{"fwci":[1.6],"gb":[0]},"Belgium":{"fwci":[1.65],"gb":[0]},"Finland":{"fwci":[1.71],"gb":[0]},"Netherlands":{"fwci":[1.76],"gb":[0]},"Slovenia":{"fwci":[1.76],"gb":[0]},"Estonia":{"fwci":[1.78],"gb":[0]},"Denmark":{"fwci":[1.96],"gb":[0]},"Cyprus":{"fwci":[2.03],"gb":[0]}},"Psychology":{"Czech Republic":{"fwci":[0.89],"gb":[0]},"Japan":{"fwci":[0.92],"gb":[0]},"Cyprus":{"fwci":[1],"gb":[0]},"France":{"fwci":[1.01],"gb":[0]},"Romania":{"fwci":[1.04],"gb":[0]},"Slovakia":{"fwci":[1.12],"gb":[0]},"Greece":{"fwci":[1.13],"gb":[0]},"Portugal":{"fwci":[1.14],"gb":[0]},"Malta":{"fwci":[1.21],"gb":[0]},"United States":{"fwci":[1.22],"gb":[0]},"Spain":{"fwci":[1.27],"gb":[0]},"Canada":{"fwci":[1.34],"gb":[0]},"Hungary":{"fwci":[1.34],"gb":[0]},"Luxembourg":{"fwci":[1.34],"gb":[0]},"Germany":{"fwci":[1.35],"gb":[0]},"Ireland":{"fwci":[1.45],"gb":[0]},"Sweden":{"fwci":[1.45],"gb":[0]},"Poland":{"fwci":[1.51],"gb":[0]},"United Kingdom":{"fwci":[1.55],"gb":[1]},"Netherlands":{"fwci":[1.57],"gb":[0]},"Denmark":{"fwci":[1.58],"gb":[0]},"Finland":{"fwci":[1.6],"gb":[0]},"Croatia":{"fwci":[1.61],"gb":[0]},"Italy":{"fwci":[1.64],"gb":[0]},"Belgium":{"fwci":[1.69],"gb":[0]},"Estonia":{"fwci":[1.82],"gb":[0]},"Austria":{"fwci":[1.91],"gb":[0]},"Latvia":{"fwci":[2],"gb":[0]},"Lithuania":{"fwci":[2.16],"gb":[0]},"Slovenia":{"fwci":[2.41],"gb":[0]},"Bulgaria":{"fwci":[3.58],"gb":[0]}},"Social Sciences":{"Bulgaria":{"fwci":[0.69],"gb":[0]},"Croatia":{"fwci":[0.71],"gb":[0]},"Lithuania":{"fwci":[0.73],"gb":[0]},"Czech Republic":{"fwci":[0.85],"gb":[0]},"Poland":{"fwci":[0.85],"gb":[0]},"Romania":{"fwci":[0.9],"gb":[0]},"Slovenia":{"fwci":[0.9],"gb":[0]},"Slovakia":{"fwci":[0.91],"gb":[0]},"Latvia":{"fwci":[0.97],"gb":[0]},"Japan":{"fwci":[0.99],"gb":[0]},"Spain":{"fwci":[1.03],"gb":[0]},"Portugal":{"fwci":[1.08],"gb":[0]},"France":{"fwci":[1.13],"gb":[0]},"Estonia":{"fwci":[1.14],"gb":[0]},"Hungary":{"fwci":[1.19],"gb":[0]},"United States":{"fwci":[1.24],"gb":[0]},"Italy":{"fwci":[1.28],"gb":[0]},"Malta":{"fwci":[1.34],"gb":[0]},"Canada":{"fwci":[1.36],"gb":[0]},"Ireland":{"fwci":[1.37],"gb":[0]},"Germany":{"fwci":[1.4],"gb":[0]},"Greece":{"fwci":[1.4],"gb":[0]},"Cyprus":{"fwci":[1.45],"gb":[0]},"Belgium":{"fwci":[1.49],"gb":[0]},"United Kingdom":{"fwci":[1.52],"gb":[1]},"Finland":{"fwci":[1.57],"gb":[0]},"Austria":{"fwci":[1.6],"gb":[0]},"Denmark":{"fwci":[1.62],"gb":[0]},"Sweden":{"fwci":[1.62],"gb":[0]},"Luxembourg":{"fwci":[1.66],"gb":[0]},"Netherlands":{"fwci":[1.68],"gb":[0]}},"Veterinary":{"Bulgaria":{"fwci":[0.52],"gb":[0]},"Croatia":{"fwci":[0.6],"gb":[0]},"Luxembourg":{"fwci":[0.6],"gb":[0]},"Cyprus":{"fwci":[0.82],"gb":[0]},"Slovakia":{"fwci":[0.85],"gb":[0]},"Hungary":{"fwci":[0.88],"gb":[0]},"Japan":{"fwci":[0.97],"gb":[0]},"Czech Republic":{"fwci":[1.08],"gb":[0]},"United States":{"fwci":[1.11],"gb":[0]},"Lithuania":{"fwci":[1.12],"gb":[0]},"Poland":{"fwci":[1.12],"gb":[0]},"Romania":{"fwci":[1.12],"gb":[0]},"Austria":{"fwci":[1.16],"gb":[0]},"Finland":{"fwci":[1.17],"gb":[0]},"Canada":{"fwci":[1.25],"gb":[0]},"Belgium":{"fwci":[1.28],"gb":[0]},"Portugal":{"fwci":[1.28],"gb":[0]},"United Kingdom":{"fwci":[1.31],"gb":[1]},"Spain":{"fwci":[1.33],"gb":[0]},"Germany":{"fwci":[1.35],"gb":[0]},"Slovenia":{"fwci":[1.42],"gb":[0]},"Netherlands":{"fwci":[1.47],"gb":[0]},"Ireland":{"fwci":[1.48],"gb":[0]},"Denmark":{"fwci":[1.49],"gb":[0]},"France":{"fwci":[1.53],"gb":[0]},"Greece":{"fwci":[1.54],"gb":[0]},"Italy":{"fwci":[1.63],"gb":[0]},"Sweden":{"fwci":[1.83],"gb":[0]},"Latvia":{"fwci":[2.12],"gb":[0]},"Estonia":{"fwci":[3.55],"gb":[0]},"Malta":{"fwci":[5.58],"gb":[0]}}}
+
+
+var win = window,   //// get page width and height
+    doc = document,
+    docElem = doc.documentElement,
+    body = doc.getElementsByTagName('body')[0],
+    page_width = win.innerWidth || docElem.clientWidth || body.clientWidth,
+    page_height = win.innerHeight|| docElem.clientHeight|| body.clientHeight;
+// alert(page_width + ' × ' + page_height);
+
+
+
+/// margins for 6x5 grid, which adapt to window size
+var width_of_svg = Math.floor(page_width / 6) - 6
+var height_of_svg = Math.floor(page_height / 5) - 10
+var width = Math.floor(width_of_svg * 0.8) 
+var height = Math.floor(height_of_svg * 0.9)
+
+var right_margin = width_of_svg - width - 10
+var vertical_margin = 10
+var x_axis_labels_translate_down = height + 10
+
+var radius_scatter = Math.floor(page_width / 400)   /// set params which depend on viewer size
+var title_font_size = Math.floor(page_width / 120)
+
+
+
+// get biggest fwci score
+fwci_scores = []
+subject_counter = 0
+for (subject in main_data) {
+	data_to_bind = main_data[subject]
+	countries = Object.keys(data_to_bind);
+	countries_len = countries.length
+	for(i=0;i<countries_len;i++) {
+	  fwci_scores.push(+data_to_bind[countries[i]]['fwci'])   /// really important to add the '+' otherwise d3.max() won't interpret the numbers properly and get the wrong answer
+	}
+	subject_counter++
+}
+max_fwci = d3.max(fwci_scores)
+//console.log(main_data['Dentistry'])
+
+var scaleY = d3.scaleLinear()   // declaring here as scaleY is same for all plots
+  .domain([0,max_fwci])
+  .range([height, 0])
+
+
+
+/// dicts of data to be used on callback: these get populated as the plots are created
+var all_data_to_bisect = {} 
+var all_y_to_bisect = {}
+var country_names = {}
+var gb_values = {}
+var scaleX_dict = {}
+
+
+
+
+function make_new_svg(subject_of_choice) {
+
+
+var svg = d3.select("body")
+    .append("svg")
+    .attr("width", width_of_svg)
+    .attr("height", height_of_svg)
+    .attr('id', subject_of_choice + '_svg')
+
+
+//svg = d3.select("#circle")
+data_to_bind = main_data[subject_of_choice]
+
+ 
+
+
+countries = Object.keys(data_to_bind);
+countries_len = countries.length
+
+
+new_data_to_bind = []            /// new data format: array of dicts (dict for each nation), which is needed for selectAll() when drawing
+for(i=0;i<countries_len;i++) {
+	new_data_to_bind.push({'country': countries[i], 'fwci': data_to_bind[countries[i]].fwci[0], 'gb': data_to_bind[countries[i]].gb[0]})
+	}
+data_to_bind = new_data_to_bind   /// overwriting in new form
+
+
+
+
+/// scaling
+px_dividing = width / (countries_len - 1)
+scaleX = d3.scaleOrdinal()
+  .domain(countries)
+  .range(d3.range(0, width + px_dividing, px_dividing))
+
+scaleX_dict[subject_of_choice] = scaleX   /// saving for use on callback highlighting countries
+
+
+
+
+
+
+// append the circle at the intersection 
+/*
+focus = svg.append("circle")
+    .attr("class", "y")
+    .style("fill", "none")
+    .style("stroke", "blue")
+    .attr("r", 50)
+    .style("display", "none")
+*/
+
+
+data_to_bisect = []  // need these for the callback whenever mouse goes over the invisible rect in the background
+y_to_bisect = []
+gb_countries = []
+for (i = 0; i < countries.length; i++) {
+	data_to_bisect.push(scaleX(data_to_bind[i].country))
+	y_to_bisect.push(scaleY(data_to_bind[i].fwci))
+	gb_countries.push(data_to_bind[i].gb)
+}
+all_data_to_bisect[subject_of_choice] = data_to_bisect
+all_y_to_bisect[subject_of_choice] = y_to_bisect
+country_names[subject_of_choice] = countries
+gb_values[subject_of_choice] = gb_countries
+
+
+// drawing circles
+svg.selectAll("circle")
+   .data(data_to_bind)
+  .enter()
+  .append("circle")
+    .attr('r', radius_scatter)
+    .attr('cx', function(d) {return scaleX(d.country)})
+    .attr('cy', function(d) { return scaleY(d.fwci)})
+    .attr('fill', function(d) { return d3.interpolateBuPu(d.gb)}) 
+    .attr('stroke', 'black')
+    .attr('transform', 'translate ('+right_margin+', '+vertical_margin+')')
+    .attr('opacity', 1)
+  .on('mouseover', function(event, d) {
+  	 brush.text(d.country)
+			.attr('x', scaleX(d.country) + 10)
+			.attr('y', scaleY(d.fwci) - 10)
+			.style('opacity', 1)
+
+  	var xy = d3.pointer(event)
+	focus.style("display", null)
+	  	//.attr('cy', xy[1])   /// option of using pointer
+  		//.attr('cx', xy[0])
+  		.attr('fill', 'red')
+  		.attr('cx', scaleX(d.country))
+		.attr('cy', scaleY(d.fwci))
+		.attr('transform', 'translate ('+right_margin+', '+vertical_margin+')')
+
+   })
+  /*
+  .on('mouseout', function(event, d) {
+  	brush.style('opacity', 0);
+
+  	focus.style("display", "none")
+
+        var xy = d3.pointer(event)
+		pos = d3.bisect(all_data_to_bisect[subject_of_choice] , xy[0]) 
+		x_pos = all_data_to_bisect[subject_of_choice][pos]
+		y_pos = all_y_to_bisect[subject_of_choice][pos]
+
+		 svg.append('circle')
+			.attr('r', radius_scatter)
+		    .attr('cx', x_pos)
+		    .attr('cy', y_pos)
+		    .attr('fill', d3.interpolateBuPu(data_to_bind[pos].fwci)) 
+		    .attr('stroke', 'black')
+		    .attr('transform', 'translate ('+right_margin+', '+vertical_margin+')')
+		    .attr('opacity', 1)
+
+  })*/
+
+
+
+//////// making a rect in the background to trigger mousemoves
+// text for brush
+var brush_chill = svg.append("text")
+	.attr('x', 60)
+  	.attr('y', 40)
+  	.attr('stroke', 'black')
+  	.attr('fill', 'pink')
+  	.style('font-size', 12)
+  	.style('padding', '4px')
+  	.style('background-color', 'pink')
+  	.style('border', '4px')
+  	.style("display", "none")
+  	.text('Wassssup!')   // this will change so say what you like :)
+
+
+
+
+
+
+
+/// console.log(d3.bisect(data_to_bisect.reverse().reverse(), 93))   /// would need to use reverse() if bisecting by y axis, but not on x
+var carrying_pos = 1;    /// used to see where the highlighted value changess
+svg.append("rect")
+        .attr("width", width)
+        .attr("height", height)
+        .style("fill", "none")
+        .attr('transform', 'translate ('+right_margin+', '+vertical_margin+')')
+        .style("pointer-events", "all")     /// allows all pointer events - can't be mouseover, etc without it
+        .on("mouseover", function() { brush_chill.style("display", null); })
+        .on("mouseout", function() { d3.select('#newcircle').remove(); brush_chill.style("display", "none"); })
+        .on("mousemove", function(event, d) {
+
+
+        	var xy = d3.pointer(event)
+        	pos = d3.bisect(all_data_to_bisect[subject_of_choice] , xy[0])   
+
+
+        	d0 = all_data_to_bisect[subject_of_choice][pos - 1],
+		    d1 = all_data_to_bisect[subject_of_choice][pos],
+		    pos = xy[0] - d0 > d1 - xy[0] ? pos : (pos-1);  // finding closest of two circles
+		    pos = d3.max([0, pos])
+
+		    country = countries[pos]
+
+		    console.log(pos)
+
+		   
+        	if (pos != carrying_pos) {    //// only changing colours if the country highlighted changes
+
+	        //	x_pos = all_data_to_bisect[subject_of_choice][carrying_pos]
+	        //	y_pos = all_y_to_bisect[subject_of_choice][carrying_pos]
+
+	        //	overwrite_circle_fill = d3.interpolateBuPu(gb_values[subject_of_choice][carrying_pos])  
+
+
+	        	d3.select('#newcircle').remove()  // remove old circle, so the new one made here is visible
+/*
+        		svg.append('circle')
+	        		.attr('r', radius_scatter)
+				    .attr('cx', x_pos)
+				    .attr('cy', y_pos)
+				     .attr('fill', overwrite_circle_fill) 
+				    .attr('stroke', 'black')
+				    .attr('transform', 'translate ('+right_margin+', '+vertical_margin+')')
+				    .attr('opacity', 1)
+				  */
+
+
+        		carrying_pos = pos  /// updating the values
+        		x_pos = all_data_to_bisect[subject_of_choice][carrying_pos]
+        		y_pos = all_y_to_bisect[subject_of_choice][carrying_pos]
+
+	        	brush_chill
+	        		.attr('x', x_pos - 30)
+	        		.attr('y', y_pos - Math.floor(right_margin / 10))
+	        		//.text(data_to_bind[pos]['country'])
+	        		.text(country_names[subject_of_choice][pos])
+	        		.style("display", null)
+	        		.attr('transform', 'translate ('+right_margin+', '+(vertical_margin-5)+')')
+	        		.raise()   /// puts text in front of circles
+	        		
+
+	        	svg.append('circle')
+	        		.attr('r', radius_scatter)
+				    .attr('cx', x_pos)
+				    .attr('cy', y_pos)
+				    .attr('fill', 'red') 
+				    .attr('stroke', 'black')
+				    .attr('transform', 'translate ('+right_margin+', '+vertical_margin+')')
+				    .attr('opacity', 1)
+				    .attr('id', 'newcircle')
+
+				 update_other_scatter(country_names[subject_of_choice][pos]) 
+			  }
+
+
+        })
+
+
+/*
+        .on("mousemove", mousemove);
+
+function mousemove() {
+		var x0 = scaleX(d3.pointer(event)[0]),   /// should invert but I don't
+		    i = d3.bisect(data, x0, 1),
+		    d0 = data[i - 1],
+		    d1 = data[i],
+		    d = x0 - d0.date > d1.date - x0 ? d1 : d0;
+
+		focus.select("circle.y")
+		    .attr("transform",
+		          "translate(" + scaleX(d.date) + "," +
+		                         scaleY(d.close) + ")");
+	}
+*/
+
+
+
+
+svg.append("g")
+	.call(d3.axisBottom(scaleX))
+	.attr("transform", "translate("+right_margin+","+x_axis_labels_translate_down+")")
+	.selectAll('text')
+		.attr('opacity', 0)
+		//.attr("transform", "translate(10, 30) rotate(60)")
+		
+
+
+svg.append("g")
+	.call(d3.axisLeft(scaleY))
+	.attr("transform", "translate("+(right_margin-10)+","+vertical_margin+")")
+
+svg.append('text')
+      .attr("x", width / 2)          /// because it's rotated 90degrees y informs x
+     // .attr("y", 20)
+      .attr("dy", "1em")
+      .style("text-anchor", "middle")
+      .text(subject_of_choice)
+      .attr("transform", "translate("+right_margin+",0)") 
+      .style('font-size', title_font_size+'px')
+
+return(svg)
+}
+
+/*
+svg.append('text')
+	.attr("transform", "rotate(-90)")
+      .attr("y", -5)          /// because it's rotated 90degrees y informs x
+      .attr("x",0 - (height / 2))
+      .attr("dy", "1em")
+      .style("text-anchor", "middle")
+      .text("FWCI");   
+ 
+*/
+
+
+document.write('<h4 style="text-align:center">Field weighted citation impact of European and G7 nations (2020)</h4>')  //
+var svg_dict = {}
+for (subject in main_data) {			 /// apply func to make plots
+	svg_dict[subject] = make_new_svg(subject)
+}
+//all_subjects = Object.keys(main_data);
+
+
+
+///// To delete all SVGs need to loop through each of the svg's for each discipline
+// d3.select('#Mathematics_svg').remove()
+
+
+
+
+
+
+
+//// func to update highlighted circles on hover
+function update_other_scatter(country) {
+
+	d3.selectAll('#callbackcircle').remove() // delete old red dots
+
+	first_place_counter = 0
+	top_50pc_counter = 0
+
+	/// start loop here
+	for (subject_to_update in main_data) {
+
+		svg = svg_dict[subject_to_update]
+
+		// Make new red dot
+		fwci = main_data[subject_to_update][country].fwci
+		scaleX = scaleX_dict[subject_to_update]
+		x_pos = scaleX(country)
+		y_pos = scaleY(fwci)
+
+		svg.append('circle')
+		        		.attr('r', radius_scatter)
+					    .attr('cx', x_pos)
+					    .attr('cy', y_pos)
+					    .attr('fill', 'red') 
+					    .attr('stroke', 'black')
+					    .attr('transform', 'translate ('+right_margin+', '+vertical_margin+')')
+					    .attr('opacity', 1)
+					    .attr('id', 'callbackcircle')
+
+		if (x_pos == width) { first_place_counter++ }
+		if (x_pos >= (width / 2)) { top_50pc_counter++ }
+	}
+
+	/// creating bottom right panel
+	make_bottom_right_panel(country, first_place_counter, top_50pc_counter)
+}
+
+
+
+// make bottom svg
+var svg_panel = d3.select("body")
+    .append("svg")
+    .attr("width", width_of_svg * 3)
+    .attr("height", height_of_svg);
+
+
+
+function make_bottom_right_panel(country, total_first, total_top_50pc) {
+text_font_size = title_font_size * 1.1
+
+	d3.selectAll('#paneltext').remove()
+
+	svg_panel.append('text')
+	  .attr("dy", "1em")
+      .style("text-anchor", "left")
+      .style('font-size', text_font_size + 'px')
+      .text('Highlighted nation: ' + country)
+      .attr("transform", "translate("+right_margin+",0)") 
+      .attr('id', 'paneltext')
+      
+	svg_panel.append('text')
+	  .attr("dy", "2.2em")
+      .style("text-anchor", "left")
+      .style('font-size', text_font_size + 'px')
+      .text('Number of disciplines in 1st place: ' + total_first)
+      .attr("transform", "translate("+right_margin+",0)") 
+      .attr('id', 'paneltext')
+
+     svg_panel.append('text')
+	  .attr("dy", "3.4em")
+      .style("text-anchor", "left")
+      .style('font-size', text_font_size + 'px')
+      .text('Number of disciplines in top 50%: ' + total_top_50pc + ' out of ' + subject_counter)
+      .attr("transform", "translate("+right_margin+",0)") 
+      .attr('id', 'paneltext')
+
+      svg_panel.append('text')
+	  .attr("dy", "5.6em")
+      .style("text-anchor", "left")
+      .style('font-size', text_font_size + 'px')
+      .text('Red dots show the highlighted country')
+      .attr("transform", "translate("+right_margin+",0)") 
+      .style('fill', 'red')
+      .attr('id', 'paneltext')
+
+      svg_panel.append('text')
+	  .attr("dy", "6.8em")
+      .style("text-anchor", "left")
+      .attr('font-weight', 700)
+      .style('font-size', text_font_size + 'px')
+      .text('The UK is in black')
+      .attr("transform", "translate("+right_margin+",0)") 
+      .attr('id', 'paneltext')
+
+
+
+}
+
+/*
+console.log(svg_panel.style('width'))
+svg_panel.append('rect')
+           .attr('x', 10)
+           .attr('y', 10)
+           .attr('width', 80)
+           .attr('height', 80)
+           .attr('fill', 'red')
+*/
+
+
+</script>
+

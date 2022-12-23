@@ -1,0 +1,96 @@
+
+
+<!-- More ideas for interactive linked nodes http://bl.ocks.org/mbostock/2706022 -->
+
+
+<!-- Using the excellent https://www.d3indepth.com/force-layout/   -->
+<html>
+<head>
+
+	<style>
+		circle {
+	  fill: orange;  
+		}
+	</style>
+
+
+	Hi<br>
+
+
+</head>
+<body>
+<svg id = 'net' height =300 width = '80%', style="border:solid 1px black;"></svg>
+
+<script src="https://d3js.org/d3.v6.js"></script>  
+
+<script>
+
+
+
+
+
+
+///// circles with various forces
+var width = 300, height = 300
+//var nodes = [{}, {}, {}, {}, {}]
+
+var nodes = d3.range(50).map(function(d) {    // making nodes with attribute 'radius'
+  return {radius: 20, category: Math.floor(Math.random() * 3)}
+})
+
+var colorScale = ['orange', 'lightblue', '#B19CD9'];
+var xCenter = [100, 300, 500]
+
+
+var simulation = d3.forceSimulation(nodes)
+  .force('charge', d3.forceManyBody().strength(5))   // negative means repulsion, positive means attraction
+  .force('center', d3.forceCenter(width, height / 2))
+  .force('collision', d3.forceCollide().radius(function(d) {return d.radius})) // prevents circles overlapping; requires 'radius' key/val pair in nodes obj
+  //.force('y', d3.forceY().y(function(d) {return 0}))   // pulls circles towards y centre (so get circle clusters instead of lines)
+  
+  .force('x', d3.forceX(300))
+  .force('x', d3.forceX().x(function(d) {return xCenter[d.category]}))  // separate circles by category across X axis
+
+
+  .on('tick', ticked);
+
+
+function ticked() {
+
+
+  var u = d3.select('#net')
+    .selectAll('circle')
+    .data(nodes)
+    .on('mousemove', function(d) {          // gets coordinates, but not sure how to access them outside of func
+      var coordinates = d3.pointer(event)
+      console.log(coordinates)
+    })
+
+
+  u.enter()
+    .append('circle')
+    .attr('r', 10)    // circle size
+    .merge(u)
+    .attr('cx', function(d) {   // movement on x axis
+      return d.x
+    })
+    .attr('cy', function(d) {
+      return d.y
+    })
+    .style('fill', function(d) {
+      return colorScale[d.category];
+    })
+
+
+
+  u.exit().remove()
+}
+
+
+
+
+
+</script>
+
+</body>
+</html>

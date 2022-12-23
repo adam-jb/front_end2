@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<svg class="target" height="700" width="900" style="border:1px solid #ccc"/>
+<head>
+<script src="https://d3js.org/d3.v6.js"></script>  
+</head>
+<body>
+<script>
+
+// transition()  is for animations
+
+
+margin = ({
+  top: 10,
+  right: 10,
+  bottom: 10,
+  left: 10
+})
+
+width = 900
+height = 700
+
+
+svg = d3.select('.target')
+circle = svg
+  .append('circle')
+    .attr('r', 15)
+    .attr('cx', 20)
+    .attr('cy', 20)
+
+
+circle      // move circle obj to new coords in 250ms
+  .transition()
+    .attr('cx', 280)
+    .attr('cy', 80)
+
+
+
+ circle      // move circle obj to new coords in 250ms
+  .transition()
+  	.delay(200)     // wait before doing this in ms
+  	.duration(1200)   // time to move in ms
+  	.ease(d3.easeLinear)    // consistent speed of movement
+	    .attr('cx', 580)
+	    .attr('cy', 80)
+   .transition()        // chaining 2nd transition
+   		.delay(0)
+   		.duration(100)
+   		.ease(d3.easeCubicInOut)
+   	    .attr('cx', 200) 
+ 
+
+
+
+
+
+
+</script>
+</body>
+</html>

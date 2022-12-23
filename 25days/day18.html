@@ -1,0 +1,100 @@
+
+<!-- https://observablehq.com/@thetylerwolf/day-18-join-enter-update-exit -->
+
+<!DOCTYPE html>
+<html>
+<svg class="target" height="300" width="300" style="border:1px solid #ccc"/>
+
+<head>
+<script src="https://d3js.org/d3.v6.js"></script>  
+</head>
+<body>
+<script>
+
+
+margin = ({
+  top: 10,
+  right: 10,
+  bottom: 10,
+  left: 10
+})
+
+width = 300
+height = 300
+
+
+
+generatePlayers = () => d3.range(30).map(d => ({
+  name: `Player ${ d }`,
+  score: 0
+}))
+
+
+randomizeScores = (players, stdDev) => {
+  players.forEach(d => d.score = Math.floor(d3.randomNormal(100, stdDev || 10)()/10))
+  players.sort((a,b) => b.score - a.score)
+}
+
+updateScores = (players, stdDev) => {
+  players.forEach(d => d.score += Math.floor(d3.randomNormal(100, stdDev || 10)()/10))
+  players.sort((a,b) => b.score - a.score)
+}
+
+color = (players) => d3.scaleOrdinal(
+  players.map(player => player.name),
+  d3.quantize( d3.interpolateRdYlGn, players.length )
+)
+
+
+// yields nothing so far
+
+async function* dd() {   // async makes 'await' work, * makes 'yield' work and makes this a generator function
+	// the data is generated from a function that returns a new data set for each example
+	const players = generatePlayers()
+
+	const svg = d3.select('.target')
+	  .attr('width', width)
+	  .attr('height', height)
+
+	  console.log(players, svg)
+
+	while(true) {
+
+		svg.selectAll('text')
+		  .data( players.slice(0,10) )
+		  .join('text')
+		    .attr('transform', (d,i) => `translate(${ 10 },${ i * 30 })`)
+		    .attr('x', 5)
+		    .attr('dy', '1.25em')
+		    .style('font-size', 14)
+		    .style('font-family', 'sans-serif')
+		  .text(d => d.name)
+
+		// randomizeScores assigns each player's score to a random number
+		randomizeScores( players )
+
+		console.log(players, svg.node())
+
+		yield svg.node();
+		// This loop repeats every 2 seconds
+		await Promises.tick(2000)
+
+	}
+}
+
+dd()
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+</body>
+</html>

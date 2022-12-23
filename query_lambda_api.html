@@ -1,0 +1,33 @@
+
+<!-- gets get from API gateway and lambda function -->
+
+<html>
+	<head>
+		<title>Site</title>
+	</head>
+<body>
+	Woo
+
+
+
+<script>
+
+	var request = new XMLHttpRequest()
+
+	// Open a new connection, using the GET request on the URL endpoint
+	request.open('GET', 'https://e88lygomj7.execute-api.eu-west-2.amazonaws.com/test/camden-lsoas?lsoa_code=E01000876', true)
+
+	request.onload = function () {
+	  // accessing JSON data here
+	  console.log(request.response)
+	}
+
+	// Send request
+	request.send()
+
+	console.log(request, typeof(request), 'aa')
+
+</script>
+
+</body>
+</html>

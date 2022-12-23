@@ -1,0 +1,212 @@
+
+<!-- using https://bl.ocks.org/ericsoco/7eebab15da4bb1040977da508aebbff6 -->
+
+<!-- rules to follow: https://en.wikipedia.org/wiki/Flocking_(behavior)#Rules -->
+
+<html>
+<head>
+
+	<style>
+		circle {
+	  fill: orange;  
+		}
+	</style>
+
+
+	Hi<br>
+
+
+</head>
+<body>
+
+<script src="https://d3js.org/d3.v6.js"></script>  
+
+<script>
+
+
+var width = 500,
+    height = 500,
+    radius = 5;
+
+var nodes = [{
+  x: width * Math.random(),
+  y: height * Math.random(),
+  r: radius,
+  radius: radius
+},
+{
+  x: width * Math.random(),
+  y: height * Math.random(),
+  r: radius,
+  radius: radius
+},
+{
+  x: width * Math.random(),
+  y: height * Math.random(),
+  r: radius,
+  radius: radius
+}];
+
+
+// set up attract force to pull nodes toward mouse location  
+var simulation = d3.forceSimulation()
+   //.force('charge', d3.forceManyBody().strength(35))   // negative means repulsion, positive means attraction
+   .force('center', d3.forceCenter(width / 2, height / 2).strength(0.03)) // pulling towards center to help birds onscreen
+
+  .on('tick', layoutTick)
+  .nodes(nodes);
+
+var svg = d3.select('body').append('svg')
+    .attr('width', width)
+    .attr('height', height);
+
+var node = svg.selectAll('circle')
+  .data(nodes)
+  .enter().append('circle')
+    .attr('cx', function (d) { return d.x; })
+    .attr('cy', function (d) { return d.y; })
+    .attr('r', function (d) { return d.r; });
+
+svg.on('mousemove', function () {
+    simulation
+    	.force('centre', d3.forceCenter(d3.pointer(event)[0], d3.pointer(event)[1]) // need to input x and y mouse positions separately
+    		.strength(0.03))     // how strong is the force between circle and mouse; make negative to repel
+    	
+    simulation
+      .alphaTarget(1)  // affects how the shape tracks the mouse (in exaggerated fash, or inverse, or something else)
+      .restart();
+  });
+
+
+
+  
+function layoutTick () {
+
+	let xx = node_update(nodes)
+
+	// these 3 lines are needed to animate the plot atm
+	node
+  		.attr('cx', function (d) { return d.x; })
+    	.attr('cy', function (d) { return d.y; })
+
+    console.log(node)
+
+
+    ///// hoping to override cx and cy attributes of circles, but not letting me write. 
+    ///// might want to use 
+    //https://unpkg.com/d3-force-attract@0.1.1/dist/d3-force-attract.js
+    for (let i = 0; i < nodes.length; i++) {
+	    node._groups[0][i]['cx'].animVal.value = xx[i].x
+	   	node._groups[0][i]['cx'].animVal.valueInSpecifiedUnits = xx[i].x
+	   	node._groups[0][i]['cx'].baseVal.value = xx[i].x
+	   	node._groups[0][i]['cx'].baseVal.valueInSpecifiedUnits = xx[i].x
+
+	    node._groups[0][i]['cy'].animVal.value = xx[i].y
+	   	node._groups[0][i]['cy'].animVal.valueInSpecifiedUnits = xx[i].y
+	   	node._groups[0][i]['cy'].baseVal.value = xx[i].y
+	   	node._groups[0][i]['cy'].baseVal.valueInSpecifiedUnits = xx[i].y
+	}
+
+
+   console.log(node._groups[0][0]['cx'].animVal.value, 
+   	node._groups[0][0]['cx'].animVal.valueInSpecifiedUnits, 
+   	node._groups[0][0]['cx'].baseVal.value,
+   	node._groups[0][0]['cx'].baseVal.valueInSpecifiedUnits)
+
+    console.log(node._groups[0][0]['cy'].animVal.value, 
+   	node._groups[0][0]['cy'].animVal.valueInSpecifiedUnits, 
+   	node._groups[0][0]['cy'].baseVal.value,
+   	node._groups[0][0]['cy'].baseVal.valueInSpecifiedUnits)
+
+	return node
+
+    // .force("charge", node_update)
+
+}
+
+
+
+  // for each node, this loops through other nodes to get distance
+  // summing changes in forces expected for each of them (inc repel and attract), to get net movement
+  // and net velocity of flock
+function node_update(nodes) {
+
+let x_change = 0;
+let y_change = 0;
+let x_total_change = 0; 
+let y_total_change = 0; 
+
+  for (let i = 0; i < nodes.length; i++) {
+	
+	let d_x = 0;
+	let d_y = 0; 
+	let node_x = nodes[i].x
+	let node_y = nodes[i].y
+
+	//console.log(nodes[i])
+
+	for (let k = 0; k < nodes.length; k++) {
+
+		if (i === k) {continue;}
+
+		a = Math.pow(node_x - nodes[k].x, 2)
+		b = Math.pow(node_y - nodes[k].y, 2)
+		node_distance = Math.sqrt(a + b)
+
+		force = push_pull_force(node_distance)
+
+		x_change = (nodes[k].x - node_x) * force * 0.002
+		y_change = (nodes[k].y - node_y) * force * 0.002
+
+		node_x += x_change
+		node_y += y_change
+
+		x_total_change += x_change
+		y_total_change += y_change
+
+	}
+
+	nodes[i].x = node_x
+	nodes[i].y = node_y
+
+  }
+
+  // adding net flock direction
+  for (let i = 0; i < nodes.length; i++) {
+  	nodes[i].x = nodes[i].x += (x_total_change / nodes.length) * 0.002
+  	nodes[i].y = nodes[i].y += (y_total_change / nodes.length) * 0.002
+  }
+
+
+  return nodes
+}
+
+
+
+function push_pull_force(distance) {
+
+	if (distance < 50) {   // if closer than 50px then repel
+		return distance - 50
+	} else {
+		return (distance - 49) / 10
+	}
+}
+
+// might be able to use this to make it work: 
+//https://unpkg.com/d3-force-attract@0.1.1/dist/d3-force-attract.js
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+

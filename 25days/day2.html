@@ -1,0 +1,70 @@
+
+
+<!DOCTYPE html>
+<html>
+<svg class="target" height="160" width="160" style="border:1px solid #ccc"/>
+<head>
+<script src="https://d3js.org/d3.v6.js"></script>  
+</head>
+<body>
+<script>
+
+
+d3.select('.target').selectAll('rect').remove()
+
+const data = [ 0, 1, 2, 3, 4]
+
+scale = d3.scaleLinear()
+scale
+	.domain([0, 10])   // scale vals 0 - 10 to 0 - 100
+	.range([0, 100])
+
+
+console.log( scale(5))  // returns 50
+
+
+
+ySliderScale = d3.scaleLinear()
+    .domain([ 0, 4])
+    .range([ 10, 130 ])
+
+xSliderScale = d3.scaleOrdinal()      // discrete scaling
+    .domain(data)
+    .range([ 10, 40, 70, 100, 130 ])
+console.log(data.map(d => xSliderScale(d)))
+
+colorSliderScale = d3.scaleLinear()   // colour scale
+    .domain([0,4])
+    .range(['#eee', 'steelblue'])
+
+console.log(colorSliderScale(1))    // returns rgb values of scaled colour (returns black or white if outside range)
+
+
+d3.select('.target')
+	.selectAll('rect')
+	.data(data)   // data bind
+	.join('rect')   // append rects
+		.attr('width', 20)
+		.attr('y', 10)
+		.attr('x', (d) => {return xSliderScale(d)})           // alter x, height and fill values based on bound array 'data'
+      	.attr('height', (d) => {return ySliderScale(d)})
+      	.style('fill', (d) => {return colorSliderScale(d)})
+
+
+
+   </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+

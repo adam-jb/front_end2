@@ -1,0 +1,60 @@
+
+<!DOCTYPE html>
+<html>
+<svg class="target" height="160" width="600" style="border:1px solid #ccc"/>
+<head>
+<script src="https://d3js.org/d3.v6.js"></script>  
+</head>
+<body>
+<script>
+
+// groups are good to transform multiple elemnts and maintain their relative positions
+
+// when a style is applied to a group, it's automatically applied to all it's children
+
+// .style = for CSS 
+// .attr = for everything else
+
+const svg = d3.select('.target')
+
+const data = [
+    { name: 'Group 1', value: 1 },
+    { name: 'Group 2', value: 2 },
+    { name: 'Group 3', value: 3 }
+  ]
+
+const fib = [ 0, 1, 2, 3, 5, 5.3, 8 ]
+
+const groups = svg   // making groups from dict 'data'
+	.selectAll('g')
+	.data( data )
+	.join('g')
+	  .attr('transform', (d,i) => 'translate(' + (100 * i) + ',0)')
+
+groups
+    .selectAll('rect')
+    .data( fib )    // bind array 'fib'
+    .join('rect')        // makes a rect for each group AND fib value
+      .attr('x', 10)    
+      .attr('y', 10)
+      .attr('width', d => d * 10)     // setting width and height of child rects within all groups, based on fib
+      .attr('height', d => d * 10)
+      .style('fill', 'transparent')
+      .style('stroke', '#ff7b57')
+      .style('stroke-width', 2)
+
+  groups.append('text')  // adding text for each group based on dict 'data' key 'name'
+      .attr('x', 10)
+      .attr('y', 110)
+      .attr('dy', '0.35em')
+      .style('font-family', 'sans-serif')
+      .style('font-size', 12)
+      .text(d => d.name)
+
+console.log(groups)   // all the rects data is available in the console log
+
+
+</script>
+</body>
+</html>
+
